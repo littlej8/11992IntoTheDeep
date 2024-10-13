@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.opmodes;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Path;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -104,6 +103,7 @@ public class CameraOpMode extends LinearOpMode {
         public static Scalar[] YELLOW_THRESH = {new Scalar(32.0, 128.0, 0.0), new Scalar(255.0, 170.0, 120.0)};
 
         List<Blob> blobs = new ArrayList<>();
+        double width = -1, height = -1;
 
         @Override
         public void init(int width, int height, CameraCalibration calibration) {
@@ -142,6 +142,12 @@ public class CameraOpMode extends LinearOpMode {
                 }
             }
 
+            if (width < 0)
+                width = input.width();
+
+            if (height < 0)
+                height = input.height();
+
             Bitmap b = Bitmap.createBitmap(input.width(), input.height(), Bitmap.Config.RGB_565);
             Utils.matToBitmap(input, b);
             lastFrame.set(b);
@@ -160,6 +166,14 @@ public class CameraOpMode extends LinearOpMode {
             continuation.dispatch(bitmapConsumer -> bitmapConsumer.accept(lastFrame.get()));
         }
 
+        public double getScreenWidth() {
+            return width;
+        }
+
+        public double getScreenHeight() {
+            return height;
+        }
+
         public Blob getLargestBlob() {
             if (blobs.isEmpty())
                 return null;
@@ -174,7 +188,7 @@ public class CameraOpMode extends LinearOpMode {
         }
     }
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         final CameraStreamProcessor processor = new CameraStreamProcessor();
 
         new VisionPortal.Builder()
@@ -190,8 +204,25 @@ public class CameraOpMode extends LinearOpMode {
         while (opModeIsActive()) {
             CameraStreamProcessor.Blob largestBlob = processor.getLargestBlob();
 
-            if (largestBlob != null)
-                telemetry.addData("Largest Blob Position", "(%d, %d)", largestBlob.getBoxFit().center.x, largestBlob.getBoxFit().center.y);
+            if (largestBlob != null) {
+                // real units are inches
+                double focalLength = 0.15748;
+                double cameraCenterX = processor.getScreenWidth() / 2;
+                double cameraCenterY = processor.getScreenHeight() / 2;
+                double realObjectWidth = 3.5;
+                double objectWidthInFrame = largestBlob.getBoxFit().size.width;
+                double objectXCoordinate = largestBlob.getBoxFit().center.x;
+                double objectYCoordinate = largestBlob.getBoxFit().center.y;
+
+                double distanceZ = (realObjectWidth * focalLength) / objectWidthInFrame;
+                double distanceX = (distanceZ / focalLength) * (objectXCoordinate - cameraCenterX);
+                double distanceY = (distanceZ / focalLength) * (objectYCoordinate - cameraCenterY);
+
+                telemetry.addData("Largest Blob Screen Position", "(%d, %d)", largestBlob.getBoxFit().center.x, largestBlob.getBoxFit().center.y);
+                telemetry.addData("Largest Blob Forward Dist", distanceZ);
+                telemetry.addData("Largest Blob Sideways Dist", distanceX);
+                telemetry.addData("Largest Blob Vertical Dist", distanceY);
+            }
 
             telemetry.update();
             sleep(100L);
