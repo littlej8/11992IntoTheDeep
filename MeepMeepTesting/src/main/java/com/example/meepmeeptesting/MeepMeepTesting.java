@@ -43,7 +43,7 @@ public class MeepMeepTesting {
                 );
 
         Image img;
-        img = ImageIO.read(new File("C:\\Users\\w260016\\Desktop\\robotics\\24-25repo\\MeepMeepTesting\\src\\main\\res\\field-2024-juice-dark.png"));
+        img = ImageIO.read(new File("C:\\Users\\jacks\\StudioProjects\\11992IntoTheDeep\\MeepMeepTesting\\src\\main\\res\\field-2024-juice-dark.png"));
         meepMeep.setBackground(img)
                 .setDarkMode(true)
                 .setBackgroundAlpha(0.95f)
