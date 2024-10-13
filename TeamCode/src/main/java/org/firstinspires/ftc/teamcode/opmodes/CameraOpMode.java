@@ -193,6 +193,7 @@ public class CameraOpMode extends LinearOpMode {
             if (largestBlob != null)
                 telemetry.addData("Largest Blob Position", "(%d, %d)", largestBlob.getBoxFit().center.x, largestBlob.getBoxFit().center.y);
 
+            telemetry.update();
             sleep(100L);
         }
     }
