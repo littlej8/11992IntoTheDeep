@@ -223,16 +223,16 @@ public class SampleDistancePipeline extends OpenCvPipeline
     }
 
     void filterContoursBySize(ArrayList<MatOfPoint> contours, double maxDeviation) {
-        double averageArea = 0.0;
+        double areaSum = 0.0;
         for (MatOfPoint contour : contours) {
             Point[] points = contour.toArray();
             MatOfPoint2f contour2f = new MatOfPoint2f(points);
 
             RotatedRect rotatedRectFitToContour = Imgproc.minAreaRect(contour2f);
-            averageArea += rotatedRectFitToContour.size.width * rotatedRectFitToContour.size.height;
+            areaSum += rotatedRectFitToContour.size.width * rotatedRectFitToContour.size.height;
         }
         
-        averageArea /= contours.size();
+        final double averageArea = areaSum / contours.size();
 
         contours.removeIf(contour -> {
             Point[] points = contour.toArray();
