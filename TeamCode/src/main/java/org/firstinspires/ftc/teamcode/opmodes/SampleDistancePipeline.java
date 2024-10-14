@@ -111,6 +111,10 @@ public class SampleDistancePipeline extends OpenCvPipeline {
         return clientSamples;
     }
 
+    public static double[][] getSamplePosition(DetectedSample sample) {
+        return {0.0, 0.0, 0.0};
+    }
+
     void findContours(Mat input) {
         // Convert the input image to YCrCb color space
         Imgproc.cvtColor(input, ycrcbMat, Imgproc.COLOR_RGB2YCrCb);
