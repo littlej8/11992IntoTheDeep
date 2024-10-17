@@ -11,12 +11,6 @@ import org.firstinspires.ftc.robotcore.external.function.Consumer;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.opencv.android.Utils;
 
-/*
- * TODO: Uncomment this when running on the robot (Causes an error in sim)
- */
-//import org.firstinspires.ftc.robotcore.external.stream.CameraStreamSource;
-//import org.firstinspires.ftc.robotcore.external.function.Continuation;
-
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -30,9 +24,15 @@ import org.opencv.imgproc.Imgproc;
 import java.util.ArrayList;
 
 /*
- * TODO: Also uncomment CameraStreamSource when running on the robot 
+ * Comment this when running on EOCV-sim
  */
-public class SampleDetectionVisionProcessor implements VisionProcessor//, CameraStreamSource
+import org.firstinspires.ftc.robotcore.external.stream.CameraStreamSource;
+import org.firstinspires.ftc.robotcore.external.function.Continuation;
+
+/*
+ * Also comment CameraStreamSource when running on sim 
+ */
+public class SampleDetectionVisionProcessor implements VisionProcessor, CameraStreamSource
 {
     /*
      * The Bitmap to send to FtcDashboard
@@ -129,12 +129,12 @@ public class SampleDetectionVisionProcessor implements VisionProcessor//, Camera
     }
 
     /*
-     * TODO: Also uncomment this
+     * Also comment this
      */
-    /*@Override
+    @Override
     public void getFrameBitmap(Continuation<? extends Consumer<Bitmap>> continuation) {
         continuation.dispatch(bitmapConsumer -> bitmapConsumer.accept(lastFrame.get()));
-    }*/
+    }
 
     public ArrayList<DetectedSample> getDetectedStones()
     {
