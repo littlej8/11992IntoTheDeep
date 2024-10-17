@@ -1,9 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
 /*
- * TODO: Uncomment this when building in Android Studio
+ * Comment this when building in EOCV-sim
 */
-//import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -21,9 +21,9 @@ public class SampleDetectionOpMode extends LinearOpMode {
             .build();
 
         /*
-        * TODO: Uncomment this when building in Android Studio
+        * Comment this when building in sim
         */
-        //FtcDashboard.getInstance().startCameraStream(processor, 0);
+        FtcDashboard.getInstance().startCameraStream(processor, 0);
 
         waitForStart();
 
