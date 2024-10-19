@@ -13,8 +13,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import java.util.ArrayList;
 import java.util.List;
 
-@TeleOp(name = "BareBonesP2POpMode")
-public class BareBonesP2POpMode extends LinearOpMode {
+@TeleOp(name = "P2POpMode")
+public class P2POpMode extends LinearOpMode {
     String[] motorNames = new String[]{"back_left_motor", "front_left_motor", "front_right_motor", "back_right_motor"};
     List<DcMotorEx> motors = new ArrayList<>();
 
