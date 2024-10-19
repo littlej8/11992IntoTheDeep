@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.opmodes;
 
 import org.openftc.easyopencv.OpenCvPipeline;
 
@@ -44,8 +44,8 @@ public class SampleDetectionPipeline extends OpenCvPipeline
     static final Scalar RED_MASK_MIN = new Scalar(0, 180, 0);
     static final Scalar RED_MASK_MAX = new Scalar(255, 255, 255);
 
-    static final double RECT_MIN_SIZE = 500;
-    static final double RECT_MAX_SIZE = 1750;
+    static final double RECT_MIN_SIZE = 0;
+    static final double RECT_MAX_SIZE = 99999;
 
     /*
      * Elements for noise reduction
