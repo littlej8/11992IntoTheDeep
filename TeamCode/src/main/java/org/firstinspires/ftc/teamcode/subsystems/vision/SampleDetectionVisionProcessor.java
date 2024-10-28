@@ -1,12 +1,27 @@
-package org.firstinspires.ftc.teamcode.opmodes;
+package org.firstinspires.ftc.teamcode.subsystems.vision;
 
-import org.openftc.easyopencv.OpenCvPipeline;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.VisionProcessor;
+import org.firstinspires.ftc.robotcore.internal.camera.calibration.CameraCalibration;
+
+import android.annotation.SuppressLint;
+import android.graphics.Canvas;
+
+import java.util.concurrent.atomic.AtomicReference;
+import android.graphics.Bitmap;
+
+import com.acmerobotics.dashboard.config.Config;
+
+import org.firstinspires.ftc.robotcore.external.function.Consumer;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
+import org.opencv.android.Utils;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
@@ -14,12 +29,29 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 
-public class SampleDetectionPipeline extends OpenCvPipeline
+/*
+ * Comment this when running on EOCV-sim
+ */
+import org.firstinspires.ftc.robotcore.external.stream.CameraStreamSource;
+import org.firstinspires.ftc.robotcore.external.function.Continuation;
+
+/*
+ * Also comment CameraStreamSource when running on sim 
+ */
+@Config
+public class SampleDetectionVisionProcessor implements VisionProcessor, CameraStreamSource
 {
+    /*
+     * The Bitmap to send to FtcDashboard
+     */
+    private final AtomicReference<Bitmap> lastFrame =
+            new AtomicReference<>(Bitmap.createBitmap(1, 1, Bitmap.Config.RGB_565));
+
     /*
      * Working image buffers
      */
     Mat ycrcbMat = new Mat();
+    Mat hsvMat = new Mat();
     Mat crMat = new Mat();
     Mat cbMat = new Mat();
 
@@ -35,17 +67,30 @@ public class SampleDetectionPipeline extends OpenCvPipeline
     Mat labeledImage = new Mat();
 
     /*
-     * Threshold values
+     * YCrCb Threshold values
      */
-    static final Scalar YELLOW_MASK_MIN = new Scalar(115, 155, 0);
-    static final Scalar YELLOW_MASK_MAX = new Scalar(255, 190, 78);
-    static final Scalar BLUE_MASK_MIN = new Scalar(0, 0, 150);
-    static final Scalar BLUE_MASK_MAX = new Scalar(255, 255, 255);
-    static final Scalar RED_MASK_MIN = new Scalar(0, 180, 0);
-    static final Scalar RED_MASK_MAX = new Scalar(255, 255, 255);
+    // static final Scalar YELLOW_MASK_MIN = new Scalar(115, 155, 0);
+    // static final Scalar YELLOW_MASK_MAX = new Scalar(255, 190, 78);
+    // static final Scalar BLUE_MASK_MIN = new Scalar(0, 0, 150);
+    // static final Scalar BLUE_MASK_MAX = new Scalar(255, 255, 255);
+    //static final Scalar RED_MASK_MIN = new Scalar(0, 180, 86);
+    //static final Scalar RED_MASK_MAX = new Scalar(255, 255, 255);
 
-    static final double RECT_MIN_SIZE = 0;
-    static final double RECT_MAX_SIZE = 99999;
+    /*
+     * HSV Threshold values
+     */
+    public static Scalar YELLOW_MASK_MIN = new Scalar(14, 175, 75);
+    public static Scalar YELLOW_MASK_MAX = new Scalar(51, 255, 255);
+    public static Scalar BLUE_MASK_MIN = new Scalar(100, 75, 50);
+    public static Scalar BLUE_MASK_MAX = new Scalar(150, 255, 255);
+    public static Scalar RED_MASK_MIN = new Scalar(0, 100, 50);
+    public static Scalar RED_MASK_MAX = new Scalar(6, 255, 255);
+
+    /*
+     * Min and Max Rectangle Area for detected samples
+     */
+    static final double RECT_MIN_SIZE = 250;
+    static final double RECT_MAX_SIZE = 999999;
 
     /*
      * Elements for noise reduction
@@ -53,56 +98,35 @@ public class SampleDetectionPipeline extends OpenCvPipeline
     Mat erodeElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2.5, 2.5));
     Mat dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2.5, 2.5));
 
-    /*
-     * Colors
-     */
-    static final Scalar RED = new Scalar(255, 0, 0);
-    static final Scalar BLUE = new Scalar(0, 0, 255);
-    static final Scalar YELLOW = new Scalar(255, 255, 0);
-
-    static final int CONTOUR_LINE_THICKNESS = 2;
-
-    static class DetectedSample
+    public static class DetectedSample
     {
-        double angle;
-        String color;
+        public RotatedRect rectFit;
+        public double angle;
+        public String color;
     }
 
     ArrayList<DetectedSample> internalSampleList = new ArrayList<>();
     volatile ArrayList<DetectedSample> clientSampleList = new ArrayList<>();
 
-    /*
-     * Viewport stages
-     */
-    enum Stage
-    {
-        FINAL,
-        RAW,
-        YCrCb,
-        MASKS,
-        MASKS_NR,
-        CONTOURS;
+    int width = 0, height = 0;
+
+    public int getWidth() {
+        return width;
     }
 
-    Stage[] stages = Stage.values();
-    int stageNum = 0;
-
-
-    @Override
-    public void onViewportTapped()
-    {
-        /*int nextStageNum = stageNum + 1;
-
-        if(nextStageNum >= stages.length)
-        {
-            nextStageNum = 0;
-        }*/
-
-        stageNum = (stageNum + 1) % stages.length;
+    public int getHeight() {
+        return height;
     }
 
     @Override
-    public Mat processFrame(Mat input)
+    public void init(int width, int height, CameraCalibration calibration) {
+        this.width = width;
+        this.height = height;
+        lastFrame.set(Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565));
+    }
+
+    @Override
+    public Mat processFrame(Mat input, long captureTimeNanos)
     {
         internalSampleList.clear();
 
@@ -115,67 +139,51 @@ public class SampleDetectionPipeline extends OpenCvPipeline
 
         clientSampleList = new ArrayList<>(internalSampleList);
 
-        /*
-         * Decide which buffer to send to the viewport
-         */
-        switch (stages[stageNum])
-        {
-            case FINAL:
-            {
-                return labeledImage;
-            }
+        labeledImage.copyTo(input);
 
-            case RAW:
-            {
-                return input;
-            }
+        Bitmap b = Bitmap.createBitmap(input.width(), input.height(), Bitmap.Config.RGB_565);
+        Utils.matToBitmap(input, b);
+        lastFrame.set(b);
 
-            case YCrCb:
-            {
-                return ycrcbMat;
-            }
+        return null;
+    }
 
-            case MASKS:
-            {
-                Mat masks = new Mat();
-                Core.addWeighted(yellowThresholdMat, 1.0, redThresholdMat, 1.0, 0.0, masks);
-                Core.addWeighted(masks, 1.0, blueThresholdMat, 1.0, 0.0, masks);
-                return masks;
-            }
-
-            case MASKS_NR:
-            {
-                Mat masksNR = new Mat();
-                Core.addWeighted(morphedYellowThreshold, 1.0, morphedRedThreshold, 1.0, 0.0, masksNR);
-                Core.addWeighted(masksNR, 1.0, morphedBlueThreshold, 1.0, 0.0, masksNR);
-                return masksNR;
-            }
-
-            case CONTOURS:
-            {
-                return contoursOnPlainImageMat;
-            }
-
-            default:
-            {
-                return labeledImage;
-            }
-        }
+    /*
+     * Also comment this
+     */
+    @Override
+    public void getFrameBitmap(Continuation<? extends Consumer<Bitmap>> continuation) {
+        continuation.dispatch(bitmapConsumer -> bitmapConsumer.accept(lastFrame.get()));
     }
 
     public ArrayList<DetectedSample> getDetectedStones()
     {
         return clientSampleList;
     }
+    public DetectedSample getLargestDetection() {
+        if (clientSampleList.isEmpty())
+            return null;
+
+        DetectedSample largest = clientSampleList.get(0);
+        for (DetectedSample sample : clientSampleList) {
+            double largeArea = largest.rectFit.size.width * largest.rectFit.size.height;
+            double thisArea = sample.rectFit.size.width * sample.rectFit.size.height;
+            if (thisArea > largeArea)
+                largest = sample;
+        }
+
+        return largest;
+    }
 
     void findContours(Mat input)
     {
         // Convert the input image to YCrCb color space
-        Imgproc.cvtColor(input, ycrcbMat, Imgproc.COLOR_RGB2YCrCb);
+        //Imgproc.cvtColor(input, ycrcbMat, Imgproc.COLOR_RGB2YCrCb);
+        Imgproc.cvtColor(input, hsvMat, Imgproc.COLOR_RGB2HSV);
 
-        Core.inRange(ycrcbMat, BLUE_MASK_MIN, BLUE_MASK_MAX, blueThresholdMat);
-        Core.inRange(ycrcbMat, RED_MASK_MIN, RED_MASK_MAX, redThresholdMat);
-        Core.inRange(ycrcbMat, YELLOW_MASK_MIN, YELLOW_MASK_MAX, yellowThresholdMat);
+        Core.inRange(hsvMat, BLUE_MASK_MIN, BLUE_MASK_MAX, blueThresholdMat);
+        Core.inRange(hsvMat, RED_MASK_MIN, RED_MASK_MAX, redThresholdMat);
+        Core.inRange(hsvMat, YELLOW_MASK_MIN, YELLOW_MASK_MAX, yellowThresholdMat);
 
         // Apply morphology to the masks
         morphMask(blueThresholdMat, morphedBlueThreshold);
@@ -221,8 +229,6 @@ public class SampleDetectionPipeline extends OpenCvPipeline
         /*
          * Apply erosion and dilation for noise reduction
          */
-        //Imgproc.GaussianBlur(input, output, new Size(3, 3), 1);
-
         Imgproc.erode(input, output, erodeElement);
         Imgproc.erode(output, output, erodeElement);
 
@@ -231,17 +237,6 @@ public class SampleDetectionPipeline extends OpenCvPipeline
     }
 
     void filterContoursBySize(ArrayList<MatOfPoint> contours) {
-        /*double areaSum = 0.0;
-        for (MatOfPoint contour : contours) {
-            Point[] points = contour.toArray();
-            MatOfPoint2f contour2f = new MatOfPoint2f(points);
-
-            RotatedRect rotatedRectFitToContour = Imgproc.minAreaRect(contour2f);
-            areaSum += rotatedRectFitToContour.size.width * rotatedRectFitToContour.size.height;
-        }
-        
-        final double averageArea = areaSum / contours.size();*/
-
         contours.removeIf(contour -> {
             Point[] points = contour.toArray();
             MatOfPoint2f contour2f = new MatOfPoint2f(points);
@@ -252,6 +247,7 @@ public class SampleDetectionPipeline extends OpenCvPipeline
         });
     }
 
+    @SuppressLint("DefaultLocale")
     void analyzeContour(MatOfPoint contour, Mat input, String color)
     {
         // Transform the contour to a different format
@@ -271,12 +267,22 @@ public class SampleDetectionPipeline extends OpenCvPipeline
         }
 
         // Compute the angle and store it
-        double angle = -(rotRectAngle - 180);
-        //drawTagText(rotatedRectFitToContour, Integer.toString((int) Math.round(angle)) + " deg", input, color);
+        //double angle = -(rotRectAngle - 180);
+        Rect r = Imgproc.boundingRect(contour2f);
+        double focalLength = 822.317;
+        double cx = 640.0 / 2.0;
+        double cy = 480.0 / 2.0;
+        double objYPix = r.height * 0.8;
+        double objXPix = r.width;
+        double zDist = (1.5 * focalLength) / objYPix;
+        double xDist = (zDist / focalLength) * (objXPix - cx);
+        double yDist = (zDist / focalLength) * (objYPix - cy);
+        drawTagText(rotatedRectFitToContour, String.format("%.2f in", zDist), input, color);
 
         // Store the detected stone information
         DetectedSample detectedSample = new DetectedSample();
-        detectedSample.angle = rotRectAngle;
+        detectedSample.rectFit = rotatedRectFitToContour;
+        detectedSample.angle = 0;
         detectedSample.color = color;
         internalSampleList.add(detectedSample);
     }
@@ -293,8 +299,8 @@ public class SampleDetectionPipeline extends OpenCvPipeline
                         rect.center.y + 25), // y anchor point
                 Imgproc.FONT_HERSHEY_PLAIN, // Font
                 1, // Font size
-                colorScalar, // Font color
-                1); // Font thickness
+                new Scalar(200, 200, 200), // Font color
+                2); // Font thickness
     }
 
     static void drawRotatedRect(RotatedRect rect, Mat drawOn, String color)
@@ -318,11 +324,15 @@ public class SampleDetectionPipeline extends OpenCvPipeline
         switch (color)
         {
             case "Blue":
-                return BLUE;
+                return new Scalar(0, 0, 255);
             case "Yellow":
-                return YELLOW;
+                return new Scalar(255, 255, 0);
             default:
-                return RED;
+                return new Scalar(255, 0, 0);
         }
+    }
+
+    @Override
+    public void onDrawFrame(Canvas canvas, int onscreenWidth, int onscreenHeight, float scaleBmpPxToCanvasPx, float scaleCanvasDensity, Object userContext) {
     }
 }

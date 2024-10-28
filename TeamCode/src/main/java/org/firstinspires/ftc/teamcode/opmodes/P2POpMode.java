@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -13,6 +14,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import java.util.ArrayList;
 import java.util.List;
 
+@Config
 @TeleOp(name = "P2POpMode")
 public class P2POpMode extends LinearOpMode {
     String[] motorNames = new String[]{"back_left_motor", "front_left_motor", "front_right_motor", "back_right_motor"};
@@ -21,13 +23,13 @@ public class P2POpMode extends LinearOpMode {
     IMU imu;
 
     // TODO: tune based on the wheels and motors
-    public static double TICKS_PER_REV = 145.1; //145.1 if 1150rpm motors; 384.5 if 435rpm
-    public static double WHEEL_DIAMETER = 2; //2 if small black wheels; 4 if big gray
+    public static double TICKS_PER_REV = 384.5; //145.1 if 1150rpm motors; 384.5 if 435rpm
+    public static double WHEEL_DIAMETER = 3.77953; //2 if small black wheels; 4 if big gray
 
     public static double IN_PER_TICK = (WHEEL_DIAMETER * Math.PI) / TICKS_PER_REV;
 
-    public static double STRAFE_MULT = 1.746;//1.45;
-    public static double FORWARD_MULT = 1.614;//1.525;
+    public static double STRAFE_MULT = 1.0;//1.45;
+    public static double FORWARD_MULT = 1.0;//1.525;
     public static double HEADING_MULT = 1.0;
 
     public double TARGET_X = 0.0;
