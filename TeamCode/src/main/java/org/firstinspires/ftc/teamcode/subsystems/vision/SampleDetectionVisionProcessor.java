@@ -57,6 +57,7 @@ public class SampleDetectionVisionProcessor implements VisionProcessor, CameraSt
 
     Mat blueThresholdMat = new Mat();
     Mat redThresholdMat = new Mat();
+    Mat redHighThresholdMat = new Mat();
     Mat yellowThresholdMat = new Mat();
 
     Mat morphedBlueThreshold = new Mat();
@@ -85,6 +86,8 @@ public class SampleDetectionVisionProcessor implements VisionProcessor, CameraSt
     public static Scalar BLUE_MASK_MAX = new Scalar(150, 255, 255);
     public static Scalar RED_MASK_MIN = new Scalar(0, 100, 50);
     public static Scalar RED_MASK_MAX = new Scalar(6, 255, 255);
+    public static Scalar RED_HIGH_MASK_MIN = new Scalar(160, 100, 50);
+    public static Scalar RED_HIGH_MASK_MAX = new Scalar(180, 100, 50);
 
     /*
      * Min and Max Rectangle Area for detected samples
@@ -183,7 +186,10 @@ public class SampleDetectionVisionProcessor implements VisionProcessor, CameraSt
 
         Core.inRange(hsvMat, BLUE_MASK_MIN, BLUE_MASK_MAX, blueThresholdMat);
         Core.inRange(hsvMat, RED_MASK_MIN, RED_MASK_MAX, redThresholdMat);
+        Core.inRange(hsvMat, RED_HIGH_MASK_MIN, RED_HIGH_MASK_MAX, redHighThresholdMat);
         Core.inRange(hsvMat, YELLOW_MASK_MIN, YELLOW_MASK_MAX, yellowThresholdMat);
+
+        Core.bitwise_or(redThresholdMat, redHighThresholdMat, redThresholdMat);
 
         // Apply morphology to the masks
         morphMask(blueThresholdMat, morphedBlueThreshold);
