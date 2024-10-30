@@ -24,7 +24,7 @@ public class P2POpMode extends LinearOpMode {
 
     // TODO: tune based on the wheels and motors
     public static double TICKS_PER_REV = 384.5; //145.1 if 1150rpm motors; 384.5 if 435rpm
-    public static double WHEEL_DIAMETER = 3.77953; //2 if small black wheels; 4 if big gray
+    public static double WHEEL_DIAMETER = 96 / 25.4; //2 if small black wheels; 4 if big gray
 
     public static double IN_PER_TICK = (WHEEL_DIAMETER * Math.PI) / TICKS_PER_REV;
 
@@ -39,6 +39,7 @@ public class P2POpMode extends LinearOpMode {
     public static double Px = 1.05;
     public static double Py = 1.0;
     public static double Ph = 3.0;
+    public static double WHEEL_CACHE_MIN = 0.07;
     public static double MAX_WHEEL_POWER = 0.3;
     public static double MAX_WHEEL_ACCEL = 0.05; //power/sec
 
@@ -91,8 +92,6 @@ public class P2POpMode extends LinearOpMode {
         //Gamepad prevGamepad1 = new Gamepad(gamepad1);
 
         waitForStart();
-
-
 
         double lastTime = programTimer.seconds();
 
@@ -182,8 +181,6 @@ public class P2POpMode extends LinearOpMode {
             exp(curPose, twist);
             curPose[2] = heading;
 
-
-
             // get field oriented x, y, and turn powers through a p controller
             double xPower = (TARGET_X - curPose[0]) * Px;
             double yPower = (TARGET_Y - curPose[1]) * Py;
@@ -231,24 +228,25 @@ public class P2POpMode extends LinearOpMode {
                 for (int i = 0; i < 4; i++)
                     p[i] = (p[i] / max) * MAX_WHEEL_POWER;
 
+            double dt = timeTotal - lastTime;
+
             // set motor powers only if the difference is noticable or sets to 0
             for (int i = 0; i < 4; i++) {
-                if (Math.abs(p[i]) <= 0.07)
+                if (Math.abs(p[i]) <= WHEEL_CACHE_MIN) {
                     p[i] = 0;
-                if (Math.abs(motorCache[i] - p[i]) <= 0.07)
-                    continue;
-
-                if (Math.abs(motorCache[i] - p[i]) * (timeTotal - lastTime) >= MAX_WHEEL_ACCEL)
-                    p[i] = motorCache[i] + (MAX_WHEEL_ACCEL * ((p[i] < 0) ? -1 : 1));
-                motors.get(i).setPower(p[i]);
-                motorCache[i] = p[i];
+                } else if (Math.abs(motorCache[i] - p[i]) > WHEEL_CACHE_MIN) {
+                    if (Math.abs(motorCache[i] - p[i]) * dt >= MAX_WHEEL_ACCEL)
+                        p[i] = motorCache[i] + (MAX_WHEEL_ACCEL * ((p[i] < 0) ? -1 : 1));
+                    motors.get(i).setPower(p[i]);
+                    motorCache[i] = p[i];
+                }
             }
 
             // log all data
             telemetry.addData("Current Pose", "(%.2f, %.2f, %.2f)", curPose[0], curPose[1], Math.toDegrees(curPose[2]));
             telemetry.addData("Target Pose", "(%.2f, %.2f, %.2f)", TARGET_X, TARGET_Y, TARGET_HEADING);
             telemetry.addData("Velocity", "(%.2f, %.2f, %.2f)", twist[0], twist[1], Math.toDegrees(twistRobotTheta));
-            telemetry.addData("Loop Time", "%f hz", 1 / (timeTotal - lastTime));
+            telemetry.addData("Loop Time", "%f hz", 1 / dt);
             telemetry.addData("Wheel Powers", "(%f, %f, %f, %f)", p[0], p[1], p[2], p[3]);
             telemetry.update();
 
