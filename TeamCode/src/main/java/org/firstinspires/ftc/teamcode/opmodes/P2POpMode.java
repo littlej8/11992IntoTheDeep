@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -32,14 +34,14 @@ public class P2POpMode extends LinearOpMode {
     public static double FORWARD_MULT = 1.0;//1.525;
     public static double HEADING_MULT = 1.0;
 
-    public double TARGET_X = 0.0;
-    public double TARGET_Y = 24.0;
-    public double TARGET_HEADING = 180.0;
+    public static double TARGET_X = 0.0;
+    public static double TARGET_Y = 24.0;
+    public static double TARGET_HEADING = 180.0;
 
-    public static double Px = 1.05;
+    public static double Px = 1.0;
     public static double Py = 1.0;
     public static double Ph = 3.0;
-    public static double WHEEL_CACHE_MIN = 0.07;
+    public static double WHEEL_CACHE_MIN = 0.01;
     public static double MAX_WHEEL_POWER = 0.3;
     public static double MAX_WHEEL_ACCEL = 0.05; //power/sec
 
@@ -47,6 +49,8 @@ public class P2POpMode extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
         // activate bulk-reading for faster loop times
         for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
@@ -69,8 +73,8 @@ public class P2POpMode extends LinearOpMode {
         motors.get(1).setDirection(DcMotor.Direction.REVERSE);
 
         // initialize imu
-        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
+        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.FORWARD;
+        RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.UP;
         RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
         imu = hardwareMap.get(IMU.class, "imu");
         imu.initialize(new IMU.Parameters(orientationOnRobot));
@@ -84,12 +88,6 @@ public class P2POpMode extends LinearOpMode {
         double heading = 0, prevHeading = 0;
         double[] curPose = new double[]{0.0, 0.0, 0.0};
         double[] motorCache = new double[]{0.0, 0.0, 0.0, 0.0};
-
-        double[][] waypoints = {{0, 24, 0}, {24, 24, 90}, {24, 0, 180}, {0, 0, 0}};
-        int currentWaypoint = 0;
-        boolean runningPoints = false;
-
-        //Gamepad prevGamepad1 = new Gamepad(gamepad1);
 
         waitForStart();
 
@@ -112,7 +110,7 @@ public class P2POpMode extends LinearOpMode {
             //telemetry.addData("xtarget", xtarget);
             //telemetry.addData("ytarget", ytarget);
 
-            if (timeTotal > 4) {
+            /*if (timeTotal > 4) {
                 TARGET_X = 24;
                 TARGET_HEADING = 0;
             }
@@ -123,31 +121,9 @@ public class P2POpMode extends LinearOpMode {
             if (timeTotal > 10) {
                 TARGET_X = 0;
                 TARGET_HEADING = 0;
-            }
-
-
-            //prevGamepad1.copy(gamepad1);
+            }*/
 
             heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
-
-            /*double x = gamepad1.left_stick_x;
-            double y = -gamepad1.left_stick_y;
-            double a = -gamepad1.right_stick_x;
-
-            double x0 = x;
-            double y0 = y;
-            x = (Math.cos(-heading) * x0) - (Math.sin(-heading) * y0);
-            y = (Math.sin(-heading) * x0) + (Math.cos(-heading) * y0);
-
-            double[] p = new double[4];
-            p[0] = -x + y - a;
-            p[1] = x + y - a;
-            p[2] = -x + y + a;
-            p[3] = x + y + a;
-
-            double max = Math.max(1, Math.max(Math.abs(p[0]), Math.max(Math.abs(p[1]), Math.max(Math.abs(p[2]), Math.abs(p[3])))));
-            if (max > 1) for (int i = 0; i < 4; i++) p[i] /= max;
-            for (int i = 0; i < 4; i++) motors.get(i).setPower(p[i]);*/
 
             // get the change in encoder position converted to inches
             wheels[0] = motors.get(1).getCurrentPosition();
@@ -220,10 +196,7 @@ public class P2POpMode extends LinearOpMode {
                                     Math.max(
                                             Math.abs(p[2]),
                                             Math.abs(p[3])
-                                    )
-                            )
-                    )
-            );
+                                    ))));
             if (max > MAX_WHEEL_POWER)
                 for (int i = 0; i < 4; i++)
                     p[i] = (p[i] / max) * MAX_WHEEL_POWER;
