@@ -41,6 +41,9 @@ public class Drivetrain {
     public static double HEADING_MULT = 1.0;
     public static double MAX_WHEEL_POWER = 0.3;
 
+    public static double LINEAR_FINISH_DIST = 0.25;
+    public static double ANGULAR_FINISH_DIST = Math.toRadians(1.0);
+
     //fl, fr, bl, br
     double[] prevWheels = new double[]{0, 0, 0, 0}, wheels = new double[]{0, 0, 0, 0};
     double prevHeading;
@@ -134,7 +137,7 @@ public class Drivetrain {
                         -(xrot * curCos - yrot * curSin),
                         xrot * curSin + yrot * curCos),
                 dtheta);
-        pose = new Pose2d(pose.plus(twist).position, heading);
+        pose = new Pose2d(pose.position.x + twist.line.x, pose.position.y + twist.line.y, heading);
 
         prevWheels[0] = wheels[0];
         prevWheels[1] = wheels[1];
@@ -152,33 +155,11 @@ public class Drivetrain {
         updatePose(null);
     }
 
-    public void updateMovement(Telemetry telemetry) {
-        xPID.setPID(xP, xI, xD);
-        yPID.setPID(yP, yI, yD);
-        hPID.setPID(hP, hI, hD);
-
-        double xPower = xPID.update(pose.position.x, targetPose.position.x);
-        double yPower = yPID.update(pose.position.y, targetPose.position.y);
-        double hPower = hPID.update(pose.heading.toDouble(), targetPose.heading.toDouble());
-
-        if (Math.abs(xPower) < 0.01)
-            xPower = 0;
-        if (Math.abs(yPower) < 0.01)
-            yPower = 0;
-        if (Math.abs(hPower) < 0.01)
-            hPower = 0;
-
-        double x0 = xPower;
-        double y0 = yPower;
-        double cos = Math.cos(-pose.heading.toDouble());
-        double sin = Math.sin(-pose.heading.toDouble());
-        xPower = x0 * cos - y0 * sin;
-        yPower = x0 * sin + y0 * cos;
-
-        double pfl = xPower + yPower - hPower;
-        double pfr = -xPower + yPower + hPower;
-        double pbl = -xPower + yPower - hPower;
-        double pbr = xPower + yPower + hPower;
+    public double[] setDrivePowers(double x, double y, double h) {
+        double pfl = x + y - h;
+        double pfr = -x + y + h;
+        double pbl = -x + y - h;
+        double pbr = x + y + h;
 
         double max = Math.max(
                 1,
@@ -202,14 +183,78 @@ public class Drivetrain {
         bl.setPower(pbl);
         br.setPower(pbr);
 
+        return new double[]{pfl, pfr, pbl, pbr};
+    }
+
+    public void setDrivePowers(Vector2d linear, double h) {
+        setDrivePowers(linear.x, linear.y, h);
+    }
+
+    public Vector2d rotateVec(Vector2d vec, double angle) {
+        double newX = vec.x * Math.cos(angle) - vec.y * Math.sin(angle);
+        double newY = vec.x * Math.sin(angle) + vec.y * Math.cos(angle);
+        return new Vector2d(newX, newY);
+    }
+
+    public void updateMovement(Telemetry telemetry) {
+        xPID.setPID(xP, xI, xD);
+        yPID.setPID(yP, yI, yD);
+        hPID.setPID(hP, hI, hD);
+
+        double xPower = xPID.update(pose.position.x, targetPose.position.x);
+        double yPower = yPID.update(pose.position.y, targetPose.position.y);
+        double hPower = hPID.update(pose.heading.toDouble(), targetPose.heading.toDouble());
+
+        if (Math.abs(xPower) < 0.03)
+            xPower = 0;
+        if (Math.abs(yPower) < 0.03)
+            yPower = 0;
+        if (Math.abs(hPower) < 0.03)
+            hPower = 0;
+
+        Vector2d linearPowers = rotateVec(new Vector2d(xPower, yPower), -pose.heading.toDouble());
+
+        double[] p = setDrivePowers(linearPowers.x, linearPowers.y, hPower);
+
         if (telemetry != null) {
             telemetry.addData("Target Pose", "(%.2f, %.2f, %.2f)", targetPose.position.x, targetPose.position.y, Math.toDegrees(targetPose.heading.toDouble()));
-            telemetry.addData("Wheel Powers", "(%f, %f, %f, %f)", pfl, pfr, pbl, pbr);
+            telemetry.addData("Wheel Powers", "(%f, %f, %f, %f)", p[0], p[1], p[2], p[3]);
         }
     }
 
     public void updateMovement() {
         updateMovement(null);
+    }
+
+    public void moveTo(Pose2d target, Telemetry telemetry) {
+        targetPose = target;
+        boolean running = true;
+        while (running && !Thread.currentThread().isInterrupted()) {
+            if (telemetry != null) {
+                updatePose(telemetry);
+                updateMovement(telemetry);
+                debug(telemetry);
+                telemetry.update();
+            } else {
+                updatePose();
+                updateMovement();
+            }
+            running = !moveFinished();
+        }
+        fl.setPower(0);
+        fr.setPower(0);
+        bl.setPower(0);
+        br.setPower(0);
+    }
+
+    public void moveTo(Pose2d target) {
+        moveTo(target, null);
+    }
+
+    public boolean moveFinished() {
+        double linearDistance = Math.hypot(targetPose.position.x - pose.position.x, targetPose.position.y - pose.position.y);
+        double angularDistance = AngleUnit.normalizeRadians(Math.abs(targetPose.heading.toDouble() - pose.heading.toDouble()));
+        return linearDistance < LINEAR_FINISH_DIST && angularDistance < ANGULAR_FINISH_DIST;
     }
 
     public void debug(Telemetry telemetry) {
