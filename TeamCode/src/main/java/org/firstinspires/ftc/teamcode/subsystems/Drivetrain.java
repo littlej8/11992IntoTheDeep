@@ -23,9 +23,11 @@ public class Drivetrain {
     IMU imu;
     Pose2d pose, targetPose;
 
+    Telemetry tel;
+
     public static double xP = 1, xI = 0, xD = 0;
     public static double yP = 1, yI = 0, yD = 0;
-    public static double hP = 3, hI = 0, hD = 0;
+    public static double hP = 6, hI = 0, hD = 0;
     PIDController xPID = new PIDController(xP, xI, xD),
             yPID = new PIDController(yP, yI, yD),
             hPID = new PIDController(hP, hI, hD, true);
@@ -41,8 +43,8 @@ public class Drivetrain {
     public static double HEADING_MULT = 1.0;
     public static double MAX_WHEEL_POWER = 0.3;
 
-    public static double LINEAR_FINISH_DIST = 0.25;
-    public static double ANGULAR_FINISH_DIST = Math.toRadians(1.0);
+    public static double LINEAR_FINISH_DIST = 0.3;
+    public static double ANGULAR_FINISH_DIST = Math.toRadians(5.0);
 
     //fl, fr, bl, br
     double[] prevWheels = new double[]{0, 0, 0, 0}, wheels = new double[]{0, 0, 0, 0};
@@ -94,6 +96,16 @@ public class Drivetrain {
 
     public Drivetrain(HardwareMap hw) {
         this(hw, new Pose2d(0, 0, 0));
+    }
+
+    public Drivetrain(HardwareMap hw, Telemetry t) {
+        this(hw);
+        tel = t;
+    }
+
+    public Drivetrain(HardwareMap hw, Telemetry t, Pose2d start) {
+        this(hw, start);
+        tel = t;
     }
 
     public void updatePose(Telemetry telemetry) {
@@ -247,8 +259,16 @@ public class Drivetrain {
         br.setPower(0);
     }
 
+    public void moveTo(double x, double y, double h) {
+        moveTo(new Pose2d(x, y, Math.toRadians(h)));
+    }
+
     public void moveTo(Pose2d target) {
-        moveTo(target, null);
+        if (tel == null) {
+            moveTo(target, null);
+        } else {
+            moveTo(target, tel);
+        }
     }
 
     public boolean moveFinished() {
