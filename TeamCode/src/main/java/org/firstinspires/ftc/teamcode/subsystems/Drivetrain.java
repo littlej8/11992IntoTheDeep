@@ -21,9 +21,10 @@ import org.firstinspires.ftc.teamcode.util.PIDController;
 public class Drivetrain {
     DcMotorEx fl, fr, bl, br;
     IMU imu;
+    double headingOffset = 0;
     Pose2d pose, targetPose;
 
-    Telemetry tel;
+    Telemetry tel = null;
 
     public static double xP = 1, xI = 0, xD = 0;
     public static double yP = 1, yI = 0, yD = 0;
@@ -41,7 +42,7 @@ public class Drivetrain {
     public static double STRAFE_MULT = 1.0;//1.45;
     public static double FORWARD_MULT = 1.0;//1.525;
     public static double HEADING_MULT = 1.0;
-    public static double MAX_WHEEL_POWER = 0.3;
+    public static double MAX_WHEEL_POWER = 0.5;
 
     public static double LINEAR_FINISH_DIST = 0.3;
     public static double ANGULAR_FINISH_DIST = Math.toRadians(5.0);
@@ -54,6 +55,7 @@ public class Drivetrain {
 
     public Drivetrain(HardwareMap hw, Pose2d startPose) {
         pose = startPose;
+        headingOffset = pose.heading.toDouble();
         targetPose = startPose;
         prevHeading = pose.heading.toDouble();
 
@@ -109,7 +111,7 @@ public class Drivetrain {
     }
 
     public void updatePose(Telemetry telemetry) {
-        double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+        double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) + headingOffset;
         wheels[0] = fl.getCurrentPosition();
         wheels[1] = fr.getCurrentPosition();
         wheels[2] = bl.getCurrentPosition();
@@ -202,7 +204,7 @@ public class Drivetrain {
         setDrivePowers(linear.x, linear.y, h);
     }
 
-    public Vector2d rotateVec(Vector2d vec, double angle) {
+    public static Vector2d rotateVec(Vector2d vec, double angle) {
         double newX = vec.x * Math.cos(angle) - vec.y * Math.sin(angle);
         double newY = vec.x * Math.sin(angle) + vec.y * Math.cos(angle);
         return new Vector2d(newX, newY);
@@ -263,11 +265,25 @@ public class Drivetrain {
         moveTo(new Pose2d(x, y, Math.toRadians(h)));
     }
 
+    public void moveToWithSpeed(double x, double y, double h, double max_speed) {
+        double tmp = MAX_WHEEL_POWER;
+        MAX_WHEEL_POWER = max_speed;
+        moveTo(x, y, h);
+        MAX_WHEEL_POWER = tmp;
+    }
+
     public void moveTo(Pose2d target) {
-        if (tel == null) {
-            moveTo(target, null);
-        } else {
-            moveTo(target, tel);
+        moveTo(target, tel);
+    }
+
+    public void maintainPosition(double millis) {
+        ElapsedTime timer = new ElapsedTime();
+        while (timer.milliseconds() < millis && !Thread.currentThread().isInterrupted()) {
+            updatePose(tel);
+            updateMovement(tel);
+            if (tel != null) {
+                debug(tel);
+            }
         }
     }
 
