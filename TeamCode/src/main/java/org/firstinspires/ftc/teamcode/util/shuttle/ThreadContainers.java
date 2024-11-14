@@ -36,7 +36,7 @@ class ThreadContainers {
 	 */
 	public static Object registerContainer(ThreadContainer container) {
 		expungeStaleEntries();
-		var ref = new WeakReference<>(container);
+		WeakReference<ThreadContainer> ref = new WeakReference<>(container);
 		CONTAINER_REGISTRY.add(ref);
 		return ref;
 	}

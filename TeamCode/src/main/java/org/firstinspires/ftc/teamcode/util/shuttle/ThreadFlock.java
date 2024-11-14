@@ -201,7 +201,7 @@ class ThreadFlock implements AutoCloseable {
 	 * @return a new thread flock
 	 */
 	public static ThreadFlock open(String name) {
-		var flock = new ThreadFlock(name);
+		ThreadFlock flock = new ThreadFlock(name);
 		flock.container.push();
 		return flock;
 	}
@@ -242,8 +242,8 @@ class ThreadFlock implements AutoCloseable {
 	public Thread start(ThreadFactory threadFactory, Runnable target) {
 		ensureOwnerOrContainsThread();
 		// hook thread
-		var startLatch = new CountDownLatch(1);
-		var initException = new AtomicReference<Throwable>();
+		CountDownLatch startLatch = new CountDownLatch(1);
+		AtomicReference<Throwable> initException = new AtomicReference<Throwable>();
 
 		Runnable wrappedTarget = () -> {
 			boolean started = false;
@@ -483,11 +483,11 @@ class ThreadFlock implements AutoCloseable {
 	 * @return true if this flock contains the thread
 	 */
 	public boolean containsThread(Thread thread) {
-		var c = JLA.threadContainer(thread);
+		ThreadContainer c = JLA.threadContainer(thread);
 		if (c == this.container)
 			return true;
 		if (c != null && c != ThreadContainers.root()) {
-			var parent = c.parent();
+			ThreadContainer parent = c.parent();
 			while (parent != null) {
 				if (parent == this.container)
 					return true;
@@ -525,7 +525,7 @@ class ThreadFlock implements AutoCloseable {
 		public ThreadContainerImpl push() {
 			// Virtual threads in the root containers are not tracked so need
 			// to register container to ensure that it is found
-			var thread = (Thread) Thread.currentThread();
+			Thread thread = (Thread) Thread.currentThread();
 			if (JLA.threadContainer(thread) == ThreadContainers.root()) {
 				this.key = ThreadContainers.registerContainer(this);
 			}

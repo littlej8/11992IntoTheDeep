@@ -445,11 +445,11 @@ public abstract class StructuredTaskScope<T> implements AutoCloseable {
 			}
 		}
 
-		var subtask = new SubtaskImpl<U>(this, task);
+		Subtask<U> subtask = new SubtaskImpl<U>(this, task);
 		if (s < SHUTDOWN) {
 			// attempt to start the thread
 			try {
-				Thread thread = flock.start(factory, subtask);
+				Thread thread = flock.start(factory, (Runnable)subtask);
 				if (thread == null) {
 					throw new RejectedExecutionException("Rejected by thread factory");
 				}
@@ -794,7 +794,7 @@ public abstract class StructuredTaskScope<T> implements AutoCloseable {
 			if (result == null) {
 				return State.UNAVAILABLE;
 			} else if (result instanceof AltResult) {
-				var alt = (AltResult) result;
+				AltResult alt = (AltResult) result;
 				// null or failed
 				return alt.state();
 			} else {
@@ -820,7 +820,7 @@ public abstract class StructuredTaskScope<T> implements AutoCloseable {
 		public Throwable exception() {
 			Object result = this.result;
 			if (result instanceof AltResult) {
-				var alt = (AltResult) result;
+				AltResult alt = (AltResult) result;
 				if (alt.state() == State.FAILED)
 					return alt.exception();
 			}

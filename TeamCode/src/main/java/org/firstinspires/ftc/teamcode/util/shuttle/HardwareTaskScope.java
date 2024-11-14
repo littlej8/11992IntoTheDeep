@@ -62,7 +62,7 @@ public class HardwareTaskScope<E extends Exception> extends StructuredTaskScope<
 	public HardwareTaskScope<E> join() throws InterruptedException, E {
 		super.joinInner();
 
-		var e = firstException.get();
+		Throwable e = firstException.get();
 		throwIfPresent(e);
 
 		return this;
@@ -71,7 +71,7 @@ public class HardwareTaskScope<E extends Exception> extends StructuredTaskScope<
 	public HardwareTaskScope<E> joinUntil(Instant deadline) throws InterruptedException, TimeoutException, E {
 		super.joinUntilInner(deadline);
 
-		var e = firstException.get();
+		Throwable e = firstException.get();
 		throwIfPresent(e);
 
 		return this;

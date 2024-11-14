@@ -50,23 +50,23 @@ public class DrivetrainOpMode extends LinearOpMode {
         // +x == towards other team
         // +y == towards basket
         // +h == left (counter-clockwise)
-        dt.moveToWithSpeed(26, 0, -90, 0.7);
+        dt.moveToWithSpeed(26, 0, -90, 0.3);
         dt.maintainPosition(2000);
         dt.moveTo(18, -32, -90);
-        dt.moveToWithSpeed(52, -32, -90, 0.7);
-        dt.moveTo(52, -52, 0);
+        dt.moveToWithSpeed(48, -32, -90, 0.5);
+        dt.moveTo(48, -48, 0);
         //dt.maintainPosition(500);
-        dt.moveToWithSpeed(3, -52, 0, 0.7);
-        dt.moveTo(1, -36, 90);
+        dt.moveToWithSpeed(3, -48, 0, 0.8);
+        dt.moveTo(-6, -36, 90);
         dt.maintainPosition(2000);
         //dt.moveTo(3, 2, -90);
-        dt.moveTo(24, 0, -90);
+        dt.moveTo(18, 4, -90);
         dt.maintainPosition(2000);
-        dt.moveTo(0, -36, 90);
+        dt.moveTo(-6, -36, 90);
         dt.maintainPosition(2000);
-        dt.moveTo(24, -2, -90);
+        dt.moveTo(17, 8, -90);
         dt.maintainPosition(2000);
-        dt.moveToWithSpeed(0, -48, -90, 0.8);
+        dt.moveToWithSpeed(-10, -36, -90, 0.8);
 
         double time = timer.seconds();
 
