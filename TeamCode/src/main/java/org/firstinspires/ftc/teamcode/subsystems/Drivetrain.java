@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.acmerobotics.dashboard.DashboardCore;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Twist2d;
@@ -108,6 +109,26 @@ public class Drivetrain {
     public Drivetrain(HardwareMap hw, Telemetry t, Pose2d start) {
         this(hw, start);
         tel = t;
+    }
+
+    public Pose2d getPose() {
+        return pose;
+    }
+
+    public Pose2d getTargetPose() {
+        return targetPose;
+    }
+
+    public double getX() {
+        return pose.position.x;
+    }
+
+    public double getY() {
+        return pose.position.y;
+    }
+
+    public double getHeading() {
+        return pose.heading.toDouble();
     }
 
     public void updatePose(Telemetry telemetry) {

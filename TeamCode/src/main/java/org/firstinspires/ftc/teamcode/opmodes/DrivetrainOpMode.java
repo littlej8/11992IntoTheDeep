@@ -39,8 +39,8 @@ public class DrivetrainOpMode extends LinearOpMode {
            TO AVOID UNDEFINED BEHAVIOR***
         try (var scope = HardwareTaskScope.open()) {
             scope.fork(() -> dt.moveToWithSpeed(26, 0, -90, 0.7));
-            scope.fork(() -> arm.goToPosition(arm.Positions.HOOK_POS));
-            scope.fork(() -> slides.goToPosition(slides.Positions.HOOK_POS));
+            scope.fork(() -> arm.goToPosition(arm.Position.HIGH_HOOK_POS));
+            scope.fork(() -> slides.goToPosition(slides.Position.HIGH_HOOK_POS));
 
             scope.join();
         }
