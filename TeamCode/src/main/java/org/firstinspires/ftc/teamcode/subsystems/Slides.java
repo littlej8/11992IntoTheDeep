@@ -31,7 +31,7 @@ public class Slides {
         LOW_BASKET,
         HIGH_BASKET
     }
-    public static int RETRACTED_POS = 0, GRAB_POS = 2, LOW_HOOK_POS = 10, HIGH_HOOK_POS = 20, LOW_BASKET_POS = 15, HIGH_BASKET_POS = 30;
+    public static double RETRACTED_POS = 0, GRAB_POS = 2, LOW_HOOK_POS = 10, HIGH_HOOK_POS = 20, LOW_BASKET_POS = 15, HIGH_BASKET_POS = 30;
 
     public Slides(HardwareMap hw) {
         for (LynxModule module :hw.getAll(LynxModule.class)) {
@@ -48,7 +48,7 @@ public class Slides {
         telemetry = tel;
     }
 
-    private int enumToPos(Position pos) {
+    private double enumToPos(Position pos) {
         switch (pos) {
             case GRAB: return GRAB_POS;
             case LOW_HOOK: return LOW_HOOK_POS;
@@ -63,12 +63,12 @@ public class Slides {
         setTarget(enumToPos(pos));
     }
 
-    public void setTarget(int pos) {
+    public void setTarget(double pos) {
         target = pos;
     }
 
-    public void goToPosition(int deg, Telemetry tel) {
-        target = deg;
+    public void goToPosition(double pos, Telemetry tel) {
+        target = pos;
         boolean running = true;
         while (running && !Thread.currentThread().isInterrupted()) {
             if (tel != null) {
@@ -81,8 +81,8 @@ public class Slides {
         }
     }
 
-    public void goToPosition(int deg) {
-        goToPosition(deg, telemetry);
+    public void goToPosition(double pos) {
+        goToPosition(pos, telemetry);
     }
 
     public void goToPosition(Position pos) {
@@ -95,6 +95,10 @@ public class Slides {
 
     public boolean atPosition() {
         return Math.abs(target - current) < FINISH_DIST;
+    }
+
+    public void hook() {
+        goToPosition(target - 2);
     }
 
     public void update(Telemetry tel) {
