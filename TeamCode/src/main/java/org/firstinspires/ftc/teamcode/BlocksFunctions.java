@@ -1,21 +1,28 @@
-package org.firstinspires.ftc.teamcode.subsystems;
+package org.firstinspires.ftc.teamcode;
+
+import com.google.blocks.ftcrobotcontroller.runtime.Block;
 
 import org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion;
 import org.firstinspires.ftc.robotcore.external.ExportClassToBlocks;
 import org.firstinspires.ftc.robotcore.external.ExportToBlocks;
+import org.firstinspires.ftc.teamcode.subsystems.Drivetrain;
 
-@ExportClassToBlocks
 public class BlocksFunctions extends BlocksOpModeCompanion {
     public static Drivetrain dt;
     @ExportToBlocks(
             comment = "Initializes the drivetrain",
             tooltip = "Initializes the drivetrain"
     )
+    /*@Block(
+            methodName = "initDrivetrain",
+            fieldName = ""
+    )*/
     public static void initDrivetrain() {
         dt = new Drivetrain(hardwareMap, telemetry);
     }
 
     @ExportToBlocks(
+
             comment = "Moves the robot to the specified position in inches relative to its starting position",
             tooltip = "Moves the robot to a position",
             parameterLabels = {"X Position", "Y Position", "Heading"}
