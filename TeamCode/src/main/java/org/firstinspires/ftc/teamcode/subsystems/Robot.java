@@ -1,17 +1,23 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.subsystems.actions.Action;
+import org.firstinspires.ftc.teamcode.subsystems.actions.ActionScheduler;
 import org.firstinspires.ftc.teamcode.util.shuttle.HardwareTaskScope;
 
 public class Robot {
+    ActionScheduler scheduler = new ActionScheduler();
+    Telemetry telemetry;
     Drivetrain dt;
     Arm arm;
     Slides slides;
 
     public Robot(HardwareMap hw, Telemetry telemetry) {
+        this.telemetry = telemetry;
         dt = new Drivetrain(hw, telemetry);
         arm = new Arm(hw, telemetry);
         slides = new Slides(hw, telemetry);
@@ -21,6 +27,36 @@ public class Robot {
         dt = new Drivetrain(hw);
         arm = new Arm(hw);
         slides = new Slides(hw);
+    }
+
+    public void schedule(Action action) {
+        scheduler.schedule(action);
+    }
+
+    public void update() {
+        scheduler.runNextAction(telemetry);
+    }
+
+    public Action moveAction(double x, double y, double h) {
+        return new Action() {
+            boolean init = false;
+
+            @Override
+            public boolean run(Telemetry telemetry) {
+                if (!init) {
+                    dt.setTargetPose(new Pose2d(x, y, h));
+                    init = true;
+                }
+
+                if (dt.moveFinished())
+                    return false;
+
+                dt.updatePose(telemetry);
+                dt.updateMovement(telemetry);
+
+                return true;
+            }
+        };
     }
 
     public void move(double x, double y, double h) throws InterruptedException {
