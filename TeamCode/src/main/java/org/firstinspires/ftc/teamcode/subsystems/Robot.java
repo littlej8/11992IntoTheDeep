@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystems.actions.Action;
 import org.firstinspires.ftc.teamcode.subsystems.actions.ActionScheduler;
+import org.firstinspires.ftc.teamcode.util.NullTelemetry;
 import org.firstinspires.ftc.teamcode.util.shuttle.HardwareTaskScope;
 
 public class Robot {
@@ -24,13 +25,21 @@ public class Robot {
     }
 
     public Robot(HardwareMap hw) {
-        dt = new Drivetrain(hw);
-        arm = new Arm(hw);
-        slides = new Slides(hw);
+        this(hw, new NullTelemetry());
     }
 
-    public void schedule(Action action) {
-        scheduler.schedule(action);
+    public Robot(HardwareMap hw, Telemetry telemetry, Pose2d startPose, boolean onlyDt) {
+        this.telemetry = telemetry;
+        if (onlyDt) {
+            dt = new Drivetrain(hw, telemetry, startPose);
+        } else {
+            arm = new Arm(hw, telemetry);
+            slides = new Slides(hw, telemetry);
+        }
+    }
+
+    public void schedule(Action... actions) {
+        scheduler.schedule(actions);
     }
 
     public void update() {
@@ -55,6 +64,33 @@ public class Robot {
                 dt.updateMovement(telemetry);
 
                 return true;
+            }
+        };
+    }
+
+    public Action highHookAction() {
+        return new Action() {
+            @Override
+            public boolean run(Telemetry telemetry) {
+                return false;
+            }
+        };
+    }
+
+    public Action hookSpecimenAction() {
+        return new Action() {
+            @Override
+            public boolean run(Telemetry telemetry) {
+                return false;
+            }
+        };
+    }
+
+    public Action grabSpecimenAction() {
+        return new Action() {
+            @Override
+            public boolean run(Telemetry telemetry) {
+                return false;
             }
         };
     }
