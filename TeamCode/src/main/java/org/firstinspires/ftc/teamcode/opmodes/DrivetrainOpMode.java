@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.subsystems.Drivetrain;
-import org.firstinspires.ftc.teamcode.util.shuttle.HardwareTaskScope;
 
 @TeleOp
 @Config
@@ -34,17 +33,6 @@ public class DrivetrainOpMode extends LinearOpMode {
         waitForStart();
 
         ElapsedTime timer = new ElapsedTime();
-
-        /* ***ONLY USE WHEN THE TASKS OPERATE ON SEPARATE ACTUATORS
-           TO AVOID UNDEFINED BEHAVIOR***
-        try (var scope = HardwareTaskScope.open()) {
-            scope.fork(() -> dt.moveToWithSpeed(26, 0, -90, 0.7));
-            scope.fork(() -> arm.goToPosition(arm.Position.HIGH_HOOK_POS));
-            scope.fork(() -> slides.goToPosition(slides.Position.HIGH_HOOK_POS));
-
-            scope.join();
-        }
-        */
 
         // 1 tile == 24 inches
         // +x == towards other team

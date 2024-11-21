@@ -2,20 +2,18 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystems.actions.Action;
 import org.firstinspires.ftc.teamcode.subsystems.actions.ActionScheduler;
 import org.firstinspires.ftc.teamcode.util.NullTelemetry;
-import org.firstinspires.ftc.teamcode.util.shuttle.HardwareTaskScope;
 
 public class Robot {
     ActionScheduler scheduler = new ActionScheduler();
     Telemetry telemetry;
-    Drivetrain dt;
-    Arm arm;
-    Slides slides;
+    public Drivetrain dt;
+    public Arm arm;
+    public Slides slides;
 
     public Robot(HardwareMap hw, Telemetry telemetry) {
         this.telemetry = telemetry;
@@ -57,8 +55,10 @@ public class Robot {
                     init = true;
                 }
 
-                if (dt.moveFinished())
+                if (dt.moveFinished()) {
+                    dt.killPowers();
                     return false;
+                }
 
                 dt.updatePose(telemetry);
                 dt.updateMovement(telemetry);
@@ -68,7 +68,25 @@ public class Robot {
         };
     }
 
-    public Action highHookAction() {
+    public Action grabSpecimenAction() {
+        return new Action() {
+            @Override
+            public boolean run(Telemetry telemetry) {
+                return false;
+            }
+        };
+    }
+
+    public Action highBarAction() {
+        return new Action() {
+            @Override
+            public boolean run(Telemetry telemetry) {
+                return false;
+            }
+        };
+    }
+
+    public Action lowBarAction() {
         return new Action() {
             @Override
             public boolean run(Telemetry telemetry) {
@@ -86,7 +104,7 @@ public class Robot {
         };
     }
 
-    public Action grabSpecimenAction() {
+    public Action highBasketAction() {
         return new Action() {
             @Override
             public boolean run(Telemetry telemetry) {
@@ -95,73 +113,21 @@ public class Robot {
         };
     }
 
-    public void move(double x, double y, double h) throws InterruptedException {
-        try (HardwareTaskScope<InterruptedException> scope = HardwareTaskScope.open()) {
-            scope.fork(() -> dt.moveTo(x, y, h));
-            scope.fork(() -> {
-                while (!dt.moveFinished()) arm.update();
-            });
-            scope.fork(() -> {
-                while (!dt.moveFinished()) slides.update();
-            });
-
-            scope.join();
-        }
+    public Action lowBasketAction() {
+        return new Action() {
+            @Override
+            public boolean run(Telemetry telemetry) {
+                return false;
+            }
+        };
     }
 
-    public void moveAndRaiseArmToHighHook(double x, double y, double h) throws InterruptedException {
-        arm.setTarget(Arm.Position.HIGH_HOOK);
-        slides.setTarget(Slides.Position.HIGH_HOOK);
-        move(x, y, h);
-    }
-
-    public void moveAndRaiseArmToLowHook(double x, double y, double h) throws InterruptedException {
-        arm.setTarget(Arm.Position.LOW_HOOK);
-        slides.setTarget(Slides.Position.LOW_HOOK);
-        move(x, y, h);
-    }
-
-    public void moveAndRaiseArmToHighBasket(double x, double y, double h) throws InterruptedException {
-        arm.setTarget(Arm.Position.HIGH_BASKET);
-        slides.setTarget(Slides.Position.HIGH_BASKET);
-        move(x, y, h);
-    }
-
-    public void moveAndRaiseArmToLowBasket(double x, double y, double h) throws InterruptedException {
-        arm.setTarget(Arm.Position.LOW_BASKET);
-        slides.setTarget(Slides.Position.LOW_BASKET);
-        move(x, y, h);
-    }
-
-    public void hookSpecimen() throws InterruptedException {
-        try (HardwareTaskScope<InterruptedException> scope = HardwareTaskScope.open()) {
-            scope.fork(() -> {
-                while (!slides.atPosition()) {
-                    dt.updatePose();
-                    dt.updateMovement();
-                }
-            });
-            scope.fork(() -> {
-                while (!slides.atPosition()) arm.update();
-            });
-            scope.fork(slides::hook);
-
-            scope.join();
-        }
-    }
-
-    public void maintain(double millis) throws InterruptedException {
-        ElapsedTime timer = new ElapsedTime();
-        try (HardwareTaskScope<InterruptedException> scope = HardwareTaskScope.open()) {
-            scope.fork(() -> dt.maintainPosition(millis));
-            scope.fork(() -> {
-                while (timer.milliseconds() < millis) arm.update();
-            });
-            scope.fork(() -> {
-                while (timer.milliseconds() < millis) slides.update();
-            });
-
-            scope.join();
-        }
+    public Action dropSampleAction() {
+        return new Action() {
+            @Override
+            public boolean run(Telemetry telemetry) {
+                return false;
+            }
+        };
     }
 }

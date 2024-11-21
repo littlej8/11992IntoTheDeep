@@ -1,22 +1,27 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.PoseVelocity2d;
-import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
-import org.firstinspires.ftc.teamcode.subsystems.roadrunner.MecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystems.Robot;
 
-@TeleOp(name="Main TeleOp", group="TeleOp")
+@TeleOp(name="MainTeleOp", group="TeleOp")
 public class MainTeleOp extends LinearOpMode {
     @Override
     public void runOpMode() {
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
+        Robot robot = new Robot(hardwareMap, telemetry, new Pose2d(0, 0, Math.toRadians(-90)), true);
+
+        waitForStart();
+
+        while (opModeIsActive()) {
+            robot.dt.setDrivePowers(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x);
+
+            telemetry.addData("left stick", "%.2f, %.2f", gamepad1.left_stick_x, gamepad1.left_stick_y);
+            telemetry.addData("right stick", "%.2f, %.2f", gamepad1.right_stick_x, gamepad1.right_stick_y);
+            telemetry.update();
+        }
+        /*MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
         drive.lazyImu.get().resetYaw();
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -42,6 +47,6 @@ public class MainTeleOp extends LinearOpMode {
             telemetry.addData("right stick", "%.2f, %.2f", gamepad2.right_stick_x, gamepad2.right_stick_y);
             telemetry.update();
             drive.setDrivePowers(new PoseVelocity2d(linear, angular));
-        }
+        }*/
     }
 }

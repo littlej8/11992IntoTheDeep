@@ -1,14 +1,13 @@
 package org.firstinspires.ftc.teamcode.opmodes;
 
 import com.acmerobotics.roadrunner.Pose2d;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.subsystems.Robot;
-import org.firstinspires.ftc.teamcode.subsystems.actions.MaintainAction;
-import org.firstinspires.ftc.teamcode.subsystems.actions.ParallelAction;
+import org.firstinspires.ftc.teamcode.subsystems.actions.UntilAction;
 
-@TeleOp
+@Autonomous(name = "Action OpMode", preselectTeleOp = "MainTeleOp")
 public class ActionOpMode extends LinearOpMode {
     Robot robot;
     @Override
@@ -16,7 +15,8 @@ public class ActionOpMode extends LinearOpMode {
         robot = new Robot(hardwareMap, telemetry, new Pose2d(0, 0, Math.toRadians(-90)), true);
 
         robot.schedule(
-                new MaintainAction(robot.moveAction(26, 0, -90), robot.highHookAction()),
+                new UntilAction(robot.moveAction(26, 0, -90), robot.highBarAction()),
+                robot.hookSpecimenAction(),
                 robot.moveAction(-10, -36, -90)
         );
 

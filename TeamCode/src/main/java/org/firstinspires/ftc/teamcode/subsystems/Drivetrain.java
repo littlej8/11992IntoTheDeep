@@ -190,6 +190,10 @@ public class Drivetrain {
         updatePose(null);
     }
 
+    public void killPowers() {
+        setDrivePowers(0, 0, 0);
+    }
+
     public double[] setDrivePowers(double x, double y, double h) {
         double pfl = x + y - h;
         double pfr = -x + y + h;
@@ -221,8 +225,14 @@ public class Drivetrain {
         return new double[]{pfl, pfr, pbl, pbr};
     }
 
-    public void setDrivePowers(Vector2d linear, double h) {
-        setDrivePowers(linear.x, linear.y, h);
+    public double[] setFieldPowers(double x, double y, double h) {
+        Vector2d vec = new Vector2d(x, y);
+        rotateVec(vec, -pose.heading.toDouble());
+        return setDrivePowers(vec, h);
+    }
+
+    public double[] setDrivePowers(Vector2d linear, double h) {
+        return setDrivePowers(linear.x, linear.y, h);
     }
 
     public static Vector2d rotateVec(Vector2d vec, double angle) {
@@ -276,10 +286,7 @@ public class Drivetrain {
             }
             running = !moveFinished();
         }
-        fl.setPower(0);
-        fr.setPower(0);
-        bl.setPower(0);
-        br.setPower(0);
+        killPowers();
     }
 
     public void moveTo(double x, double y, double h) {
