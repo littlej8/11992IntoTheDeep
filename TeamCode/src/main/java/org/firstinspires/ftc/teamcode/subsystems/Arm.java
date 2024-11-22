@@ -10,14 +10,13 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.util.PIDController;
 
 public class Arm {
-    DcMotorEx leftMotor, rightMotor;
+    DcMotorEx armMotor;
     public static double Kp = 1.5;
     public static double Ki = 0.0;
     public static double Kd = 0.4;
     public static double Kf = 0.35;
-    public static PIDController leftController = new PIDController(0, 0, 0);
-    public static PIDController rightController = new PIDController(0, 0, 0);
-    public static double leftCurrent = 0, rightCurrent = 0, target = 0;
+    public static PIDController controller = new PIDController(0, 0, 0);
+    public static double current = 0, target = 0;
     public static double degPerTick = 360.0 / 384.5;
     public static double startTicks = -5;
     public static double ANGLE_FINISH_DIST = 5;
@@ -39,14 +38,10 @@ public class Arm {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
 
-        leftMotor = hw.get(DcMotorEx.class, "armleft");
-        rightMotor = hw.get(DcMotorEx.class, "armright");
+        armMotor = hw.get(DcMotorEx.class, "Arm");
 
-        leftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        leftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        leftMotor.setDirection(DcMotor.Direction.REVERSE);
-        rightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public Arm(HardwareMap hw, Telemetry tel) {
@@ -100,38 +95,29 @@ public class Arm {
     }
 
     public boolean atPosition() {
-        return Math.abs(target - ((leftCurrent + rightCurrent) / 2)) < ANGLE_FINISH_DIST;
+        return Math.abs(target - current) < ANGLE_FINISH_DIST;
     }
 
     public void update(Telemetry tel) {
-        leftController.setPID(Kp, Ki, Kd);
-        rightController.setPID(Kp, Ki, Kd);
+        controller.setPID(Kp, Ki, Kd);
 
-        double leftEnc = leftMotor.getCurrentPosition();
-        double rightEnc = rightMotor.getCurrentPosition();
+        double armEnc = armMotor.getCurrentPosition();
 
-        double leftAngle = Math.toRadians((leftEnc + startTicks) * degPerTick);
-        double rightAngle = Math.toRadians((rightEnc + startTicks) * degPerTick);
+        double armAngle = Math.toRadians((armEnc + startTicks) * degPerTick);
         double targetAngle = Math.toRadians(target);
 
-        double leftPower = leftController.update(leftAngle, targetAngle) + (Math.cos(leftAngle) * Kf);;
-        double rightPower = rightController.update(rightAngle, targetAngle) + (Math.cos(rightAngle) * Kf);
+        double armPower = controller.update(armAngle, targetAngle) + (Math.cos(armAngle) * Kf);;
 
-        leftMotor.setPower(leftPower);
-        rightMotor.setPower(rightPower);
+        armMotor.setPower(armPower);
 
         if (tel != null) {
             tel.addData("target", Math.toDegrees(targetAngle));
-            tel.addData("left cur", leftEnc);
-            tel.addData("right cur", rightEnc);
-            tel.addData("left angle", Math.toDegrees(leftAngle));
-            tel.addData("right angle", Math.toDegrees(rightAngle));
-            tel.addData("left power", leftPower);
-            tel.addData("right power", rightPower);
+            tel.addData("arm cur", armEnc);
+            tel.addData("arm angle", Math.toDegrees(armAngle));
+            tel.addData("arm power", armPower);
         }
 
-        leftCurrent = leftAngle;
-        rightCurrent = rightAngle;
+        current = armAngle;
     }
 
     public void update() {

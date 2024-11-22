@@ -35,7 +35,7 @@ public class Drivetrain {
             hPID = new PIDController(hP, hI, hD, true);
 
     public static double TICKS_PER_REV = 384.5; //145.1 if 1150rpm motors; 384.5 if 435rpm
-    public static double WHEEL_DIAMETER = 96 / 25.4; //75mm if small black wheels; 96mm if big gray
+    public static double WHEEL_DIAMETER = 96 / 25.4; //75mm if small black wheels; 96mm if big gray or yellow
 
     public static double IN_PER_TICK = (WHEEL_DIAMETER * Math.PI) / TICKS_PER_REV;
     public static double LAT_IN_PER_TICK = IN_PER_TICK;

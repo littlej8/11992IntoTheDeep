@@ -5,25 +5,32 @@ import org.firstinspires.ftc.teamcode.util.NullTelemetry;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class ActionScheduler {
-    private ArrayList<Action> actionsStack = new ArrayList<>();
+    // a queue is first in first out
+    private final Queue<Action> actionsQueue = new LinkedList<>();
 
     public ActionScheduler() {}
     public ActionScheduler(Action... actions) {
-        actionsStack.addAll(Arrays.asList(actions));
+        actionsQueue.addAll(Arrays.asList(actions));
     }
 
     public void schedule(Action... actions) {
-        actionsStack.addAll(Arrays.asList(actions));
+        actionsQueue.addAll(Arrays.asList(actions));
     }
 
     public Action getNextAction() {
-        return actionsStack.get(actionsStack.size()-1);
+        if (!actionsQueue.isEmpty())
+            return actionsQueue.peek();
+        else
+            return telemetry -> false;
     }
 
     public void removeCurrentAction() {
-        actionsStack.remove(actionsStack.size()-1);
+        if (!actionsQueue.isEmpty())
+            actionsQueue.remove();
     }
 
     public void runNextAction(Telemetry telemetry) {

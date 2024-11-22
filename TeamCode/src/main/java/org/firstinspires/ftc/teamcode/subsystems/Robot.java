@@ -51,7 +51,7 @@ public class Robot {
             @Override
             public boolean run(Telemetry telemetry) {
                 if (!init) {
-                    dt.setTargetPose(new Pose2d(x, y, h));
+                    dt.setTargetPose(new Pose2d(x, y, Math.toRadians(h)));
                     init = true;
                 }
 
