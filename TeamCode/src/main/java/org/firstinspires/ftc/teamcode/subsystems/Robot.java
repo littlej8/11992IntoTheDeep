@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystems.actions.Action;
 import org.firstinspires.ftc.teamcode.subsystems.actions.ActionScheduler;
+import org.firstinspires.ftc.teamcode.subsystems.actions.UntilAction;
+import org.firstinspires.ftc.teamcode.subsystems.actions.WaitAction;
 import org.firstinspires.ftc.teamcode.util.NullTelemetry;
 
 public class Robot {
@@ -40,6 +42,10 @@ public class Robot {
         scheduler.schedule(actions);
     }
 
+    public boolean actionsDone() {
+        return scheduler.actionsDone();
+    }
+
     public void update() {
         scheduler.runNextAction(telemetry);
     }
@@ -68,66 +74,81 @@ public class Robot {
         };
     }
 
-    public Action grabSpecimenAction() {
+    public Action moveAction(double x, double y, double h, double speed) {
         return new Action() {
+            boolean init = false;
+            final double prevPower = Drivetrain.MAX_WHEEL_POWER;
+
             @Override
             public boolean run(Telemetry telemetry) {
-                return false;
+                if (!init) {
+                    Drivetrain.MAX_WHEEL_POWER = speed;
+                    dt.setTargetPose(new Pose2d(x, y, Math.toRadians(h)));
+                    init = true;
+                }
+
+                if (dt.moveFinished()) {
+                    Drivetrain.MAX_WHEEL_POWER = prevPower;
+                    dt.killPowers();
+                    return false;
+                }
+
+                dt.updatePose(telemetry);
+                dt.updateMovement(telemetry);
+
+                return true;
             }
         };
+    }
+
+    public Action moveAndAction(double x, double y, double h, Action action) {
+        return new UntilAction(moveAction(x, y, h), action);
+    }
+
+    public Action moveAndAction(double x, double y, double h, double speed, Action action) {
+        return new UntilAction(moveAction(x, y, h, speed), action);
+    }
+
+    public Action maintainPositionAction() {
+        return telemetry -> {
+            dt.updatePose();
+            dt.updateMovement();
+            return false;
+        };
+    }
+
+    public Action lowerArmAction() {
+        return new WaitAction(2000);
+    }
+
+    public Action grabSpecimenAction() {
+        return new WaitAction(2000);
     }
 
     public Action highBarAction() {
-        return new Action() {
-            @Override
-            public boolean run(Telemetry telemetry) {
-                return false;
-            }
-        };
+        return new WaitAction(2000);
     }
 
     public Action lowBarAction() {
-        return new Action() {
-            @Override
-            public boolean run(Telemetry telemetry) {
-                return false;
-            }
-        };
+        return new WaitAction(2000);
     }
 
     public Action hookSpecimenAction() {
-        return new Action() {
-            @Override
-            public boolean run(Telemetry telemetry) {
-                return false;
-            }
-        };
+        return new WaitAction(2000);
+    }
+    public Action grabSampleAction() {
+        return new WaitAction(2000);
     }
 
     public Action highBasketAction() {
-        return new Action() {
-            @Override
-            public boolean run(Telemetry telemetry) {
-                return false;
-            }
-        };
+        return new WaitAction(2000);
     }
 
     public Action lowBasketAction() {
-        return new Action() {
-            @Override
-            public boolean run(Telemetry telemetry) {
-                return false;
-            }
-        };
+        return new WaitAction(2000);
     }
 
     public Action dropSampleAction() {
-        return new Action() {
-            @Override
-            public boolean run(Telemetry telemetry) {
-                return false;
-            }
-        };
+        return new WaitAction(2000);
     }
 }

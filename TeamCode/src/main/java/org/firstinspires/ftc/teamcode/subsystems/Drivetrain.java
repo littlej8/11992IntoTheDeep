@@ -227,7 +227,7 @@ public class Drivetrain {
 
     public double[] setFieldPowers(double x, double y, double h) {
         Vector2d vec = new Vector2d(x, y);
-        rotateVec(vec, -pose.heading.toDouble());
+        vec = rotateVec(vec, -imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
         return setDrivePowers(vec, h);
     }
 

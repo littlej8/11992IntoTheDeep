@@ -33,6 +33,10 @@ public class ActionScheduler {
             actionsQueue.remove();
     }
 
+    public boolean actionsDone() {
+        return actionsQueue.isEmpty();
+    }
+
     public void runNextAction(Telemetry telemetry) {
         if (!getNextAction().run(telemetry)) {
             removeCurrentAction();
