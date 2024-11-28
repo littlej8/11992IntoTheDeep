@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-import com.acmerobotics.dashboard.DashboardCore;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Twist2d;
@@ -19,17 +18,17 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.util.PIDController;
 
 @Config
-public class Drivetrain {
+public class Drivetrain implements Subsystem {
     DcMotorEx fl, fr, bl, br;
     IMU imu;
-    double headingOffset = 0;
+    double headingOffset;
     Pose2d pose, targetPose;
 
     Telemetry tel = null;
 
-    public static double xP = 1, xI = 0, xD = 0;
-    public static double yP = 1, yI = 0, yD = 0;
-    public static double hP = 6, hI = 0, hD = 0;
+    public static double xP = 1, xI = 0, xD = 0.1;
+    public static double yP = 1, yI = 0, yD = 0.1;
+    public static double hP = 6, hI = 0, hD = 1;
     PIDController xPID = new PIDController(xP, xI, xD),
             yPID = new PIDController(yP, yI, yD),
             hPID = new PIDController(hP, hI, hD, true);
@@ -38,11 +37,9 @@ public class Drivetrain {
     public static double WHEEL_DIAMETER = 96 / 25.4; //75mm if small black wheels; 96mm if big gray or yellow
 
     public static double IN_PER_TICK = (WHEEL_DIAMETER * Math.PI) / TICKS_PER_REV;
-    public static double LAT_IN_PER_TICK = IN_PER_TICK;
 
-    public static double STRAFE_MULT = 1.0;//1.45;
-    public static double FORWARD_MULT = 1.0;//1.525;
-    public static double HEADING_MULT = 1.0;
+    public static double FORWARD_GAIN = 1.063594;
+    public static double STRAFE_GAIN = 1.268493;
     public static double MAX_WHEEL_POWER = 0.5;
 
     public static double LINEAR_FINISH_DIST = 0.3;
@@ -143,9 +140,9 @@ public class Drivetrain {
         double dbl = (wheels[2] - prevWheels[2]) * IN_PER_TICK;
         double dbr = (wheels[3] - prevWheels[3]) * IN_PER_TICK;
 
-        double dy = ((dfl + dfr + dbl + dbr) / 4) * STRAFE_MULT;
-        double dx = ((dbl + dfr - dfl - dbr) / 4) * FORWARD_MULT;
-        double dtheta = (heading - prevHeading) * HEADING_MULT;
+        double dy = ((dfl + dfr + dbl + dbr) / 4) * STRAFE_GAIN;
+        double dx = ((dbl + dfr - dfl - dbr) / 4) * FORWARD_GAIN;
+        double dtheta = (heading - prevHeading);
 
         double sinTheta = Math.sin(dtheta);
         double cosTheta = Math.cos(dtheta);
@@ -269,6 +266,16 @@ public class Drivetrain {
 
     public void updateMovement() {
         updateMovement(null);
+    }
+
+    @Override
+    public void update(Telemetry telemetry) {
+        updatePose(telemetry);
+        updateMovement(telemetry);
+    }
+
+    public void update() {
+        update(tel);
     }
 
     public void moveTo(Pose2d target, Telemetry telemetry) {

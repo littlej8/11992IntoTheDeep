@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.util.PIDController;
 
-public class Arm {
+public class Arm implements Subsystem {
     DcMotorEx armMotor;
     public static double Kp = 1.5;
     public static double Ki = 0.0;
@@ -98,6 +98,7 @@ public class Arm {
         return Math.abs(target - current) < ANGLE_FINISH_DIST;
     }
 
+    @Override
     public void update(Telemetry tel) {
         controller.setPID(Kp, Ki, Kd);
 

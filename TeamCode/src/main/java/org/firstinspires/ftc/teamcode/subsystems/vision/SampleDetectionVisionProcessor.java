@@ -273,7 +273,7 @@ public class SampleDetectionVisionProcessor implements VisionProcessor, CameraSt
         }
 
         // Compute the angle and store it
-        //double angle = -(rotRectAngle - 180);
+        double angle = -(rotRectAngle - 180);
         Rect r = Imgproc.boundingRect(contour2f);
         double focalLength = 822.317;
         double cx = 640.0 / 2.0;
@@ -288,7 +288,7 @@ public class SampleDetectionVisionProcessor implements VisionProcessor, CameraSt
         // Store the detected stone information
         DetectedSample detectedSample = new DetectedSample();
         detectedSample.rectFit = rotatedRectFitToContour;
-        detectedSample.angle = 0;
+        detectedSample.angle = angle;
         detectedSample.color = color;
         internalSampleList.add(detectedSample);
     }

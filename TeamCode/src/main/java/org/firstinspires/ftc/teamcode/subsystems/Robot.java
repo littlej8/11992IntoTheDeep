@@ -10,18 +10,24 @@ import org.firstinspires.ftc.teamcode.subsystems.actions.UntilAction;
 import org.firstinspires.ftc.teamcode.subsystems.actions.WaitAction;
 import org.firstinspires.ftc.teamcode.util.NullTelemetry;
 
-public class Robot {
+public class Robot implements Subsystem {
     ActionScheduler scheduler = new ActionScheduler();
     Telemetry telemetry;
     public Drivetrain dt;
+    public Claw claw;
     public Arm arm;
     public Slides slides;
 
-    public Robot(HardwareMap hw, Telemetry telemetry) {
+    public Robot(HardwareMap hw, Telemetry telemetry, Pose2d startPose) {
         this.telemetry = telemetry;
-        dt = new Drivetrain(hw, telemetry);
+        dt = new Drivetrain(hw, telemetry, startPose);
         arm = new Arm(hw, telemetry);
         slides = new Slides(hw, telemetry);
+        claw = new Claw(hw);
+    }
+
+    public Robot(HardwareMap hw, Telemetry telemetry) {
+        this(hw, telemetry, new Pose2d(0, 0, 0));
     }
 
     public Robot(HardwareMap hw) {
@@ -35,6 +41,7 @@ public class Robot {
         } else {
             arm = new Arm(hw, telemetry);
             slides = new Slides(hw, telemetry);
+            claw = new Claw(hw);
         }
     }
 
@@ -47,6 +54,11 @@ public class Robot {
     }
 
     public void update() {
+        update(telemetry);
+    }
+
+    @Override
+    public void update(Telemetry telemetry) {
         scheduler.runNextAction(telemetry);
     }
 

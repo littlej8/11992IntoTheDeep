@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.util.PIDController;
 
-public class Slides {
+public class Slides implements Subsystem {
     DcMotorEx slideMotor;
     public static double Kp = 0.0;
     public static double Ki = 0.0;
@@ -101,6 +101,7 @@ public class Slides {
         goToPosition(target - 2);
     }
 
+    @Override
     public void update(Telemetry tel) {
         slideController.setPID(Kp, Ki, Kd);
 
