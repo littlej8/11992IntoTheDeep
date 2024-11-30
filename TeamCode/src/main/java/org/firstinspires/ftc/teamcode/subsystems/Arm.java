@@ -7,6 +7,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.subsystems.actions.Action;
+import org.firstinspires.ftc.teamcode.subsystems.actions.WaitAction;
 import org.firstinspires.ftc.teamcode.util.PIDController;
 
 public class Arm implements Subsystem {
@@ -31,7 +33,7 @@ public class Arm implements Subsystem {
         LOW_BASKET,
         HIGH_BASKET
     }
-    public static int RETRACTED_POS = -4, GRAB_POS = 2, LOW_HOOK_POS = 45, HIGH_HOOK_POS = 75, LOW_BASKET_POS = 60, HIGH_BASKET_POS = 80;
+    public static double RETRACTED_POS = -50, GRAB_POS = -25, LOW_HOOK_POS = 45, HIGH_HOOK_POS = 75, LOW_BASKET_POS = 60, HIGH_BASKET_POS = 80;
 
     public Arm(HardwareMap hw) {
         for (LynxModule module :hw.getAll(LynxModule.class)) {
@@ -49,7 +51,7 @@ public class Arm implements Subsystem {
         telemetry = tel;
     }
 
-    private int enumToPos(Position pos) {
+    private double enumToPos(Position pos) {
         switch (pos) {
             case GRAB: return GRAB_POS;
             case LOW_HOOK: return LOW_HOOK_POS;
@@ -64,11 +66,36 @@ public class Arm implements Subsystem {
         setTarget(enumToPos(pos));
     }
 
-    public void setTarget(int deg) {
+    public void setTarget(double deg) {
         target = deg;
     }
 
-    public void goToPosition(int deg, Telemetry tel) {
+    public double getArmPosition() {
+        return current;
+    }
+
+    public Action goToAction(Position pos) {
+        return goToAction(enumToPos(pos));
+    }
+
+    public Action goToAction(double deg) {
+        return new Action() {
+            boolean init = false;
+            @Override
+            public boolean run(Telemetry telemetry) {
+                if (!init) {
+                    setTarget(deg);
+                    init = true;
+                }
+
+                update(telemetry);
+
+                return !atPosition();
+            }
+        };
+    }
+
+    public void goToPosition(double deg, Telemetry tel) {
         target = deg;
         boolean running = true;
         while (running && !Thread.currentThread().isInterrupted()) {
@@ -82,7 +109,7 @@ public class Arm implements Subsystem {
         }
     }
 
-    public void goToPosition(int deg) {
+    public void goToPosition(double deg) {
         goToPosition(deg, telemetry);
     }
 

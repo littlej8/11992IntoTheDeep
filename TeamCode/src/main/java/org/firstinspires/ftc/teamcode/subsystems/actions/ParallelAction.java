@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /*
-    Runs until all actions are completed
+    Runs all actions and removes one once it is finished, stops when all actions are removed
  */
 public class ParallelAction implements Action {
     ArrayList<Action> actions = new ArrayList<>();

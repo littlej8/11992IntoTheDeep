@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystems.actions.Action;
 import org.firstinspires.ftc.teamcode.subsystems.actions.ActionScheduler;
+import org.firstinspires.ftc.teamcode.subsystems.actions.ActionSequence;
 import org.firstinspires.ftc.teamcode.subsystems.actions.UntilAction;
 import org.firstinspires.ftc.teamcode.subsystems.actions.WaitAction;
 import org.firstinspires.ftc.teamcode.util.NullTelemetry;
@@ -123,44 +124,92 @@ public class Robot implements Subsystem {
 
     public Action maintainPositionAction() {
         return telemetry -> {
-            dt.updatePose();
-            dt.updateMovement();
+            dt.updatePose(telemetry);
+            dt.updateMovement(telemetry);
             return false;
         };
     }
 
     public Action lowerArmAction() {
-        return new WaitAction(2000);
+        if (arm == null) {
+            return new WaitAction(2000);
+        }
+
+        return arm.goToAction(Arm.Position.RETRACTED);
+    }
+
+    public Action armToGrabAction() {
+        if (arm == null) {
+            return new WaitAction(2000);
+        }
+
+        return arm.goToAction(Arm.Position.GRAB);
     }
 
     public Action grabSpecimenAction() {
-        return new WaitAction(2000);
+        if (claw == null) {
+            return new WaitAction(2000);
+        }
+
+        return claw.gripAction();
     }
 
     public Action highBarAction() {
-        return new WaitAction(2000);
+        if (arm == null) {
+            return new WaitAction(2000);
+        }
+
+        return arm.goToAction(Arm.Position.HIGH_HOOK);
     }
 
     public Action lowBarAction() {
-        return new WaitAction(2000);
+        if (arm == null) {
+            return new WaitAction(2000);
+        }
+
+        return arm.goToAction(Arm.Position.LOW_HOOK);
     }
 
     public Action hookSpecimenAction() {
-        return new WaitAction(2000);
+        if (arm == null || claw == null) {
+            return new WaitAction(2000);
+        }
+
+        return new ActionSequence(
+            arm.goToAction(arm.getArmPosition() - 5),
+            claw.dropAction()
+        );
     }
+
     public Action grabSampleAction() {
-        return new WaitAction(2000);
+        if (claw == null) {
+            return new WaitAction(2000);
+        }
+
+        return claw.gripAction();
     }
 
     public Action highBasketAction() {
-        return new WaitAction(2000);
+        if (arm == null) {
+            return new WaitAction(2000);
+        }
+
+        return arm.goToAction(Arm.Position.HIGH_BASKET);
     }
 
     public Action lowBasketAction() {
-        return new WaitAction(2000);
+        if (arm == null) {
+            return new WaitAction(2000);
+        }
+
+        return arm.goToAction(Arm.Position.LOW_BASKET);
     }
 
     public Action dropSampleAction() {
-        return new WaitAction(2000);
+        if (claw == null) {
+            return new WaitAction(2000);
+        }
+
+        return claw.dropAction();
     }
 }

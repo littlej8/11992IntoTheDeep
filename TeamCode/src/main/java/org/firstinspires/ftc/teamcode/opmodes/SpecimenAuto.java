@@ -8,11 +8,29 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.subsystems.Robot;
+import org.firstinspires.ftc.teamcode.subsystems.actions.Action;
+import org.firstinspires.ftc.teamcode.subsystems.actions.ActionSequence;
+import org.firstinspires.ftc.teamcode.subsystems.actions.ParallelAction;
 import org.firstinspires.ftc.teamcode.subsystems.actions.UntilAction;
 
 @Autonomous(name = "Specimen OpMode", preselectTeleOp = "MainTeleOp")
 public class SpecimenAuto extends LinearOpMode {
     Robot robot;
+
+    // ram into the wall to reset position then grab
+    private Action grabAction() {
+        return new ActionSequence(
+                robot.moveAction(-12, -36, 90, 0.3),
+                new ParallelAction(
+                        robot.grabSpecimenAction(),
+                        telemetry -> {
+                            robot.dt.setX(0);
+                            return false;
+                        }
+                )
+        );
+    }
+
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -26,11 +44,11 @@ public class SpecimenAuto extends LinearOpMode {
                 robot.moveAction(60, -32, -90),
                 robot.moveAction(60, -48, 0),
                 robot.moveAction(3, -48, 0, 0.8),
-                robot.moveAction(0, -36, 90),
+                robot.moveAndAction(0, -36, 90, robot.armToGrabAction()),
                 new UntilAction(robot.grabSpecimenAction(), robot.maintainPositionAction()),
                 robot.moveAndAction(26, 4, -90, robot.highBarAction()),
                 new UntilAction(robot.hookSpecimenAction(), robot.maintainPositionAction()),
-                robot.moveAndAction(0, -36, 90, robot.lowerArmAction()),
+                robot.moveAndAction(0, -36, 90, robot.armToGrabAction()),
                 new UntilAction(robot.grabSpecimenAction(), robot.maintainPositionAction()),
                 robot.moveAndAction(26, 8, -90, robot.highBarAction()),
                 new UntilAction(robot.hookSpecimenAction(), robot.maintainPositionAction()),

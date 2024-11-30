@@ -112,6 +112,14 @@ public class Drivetrain implements Subsystem {
         return pose;
     }
 
+    public void setPose(Pose2d newPose) {
+        pose = newPose;
+    }
+
+    public void setPose(double x, double y, double heading) {
+        setPose(new Pose2d(x, y, heading));
+    }
+
     public Pose2d getTargetPose() {
         return targetPose;
     }
@@ -126,6 +134,19 @@ public class Drivetrain implements Subsystem {
 
     public double getHeading() {
         return pose.heading.toDouble();
+    }
+
+    public void setX(double x) {
+        setPose(x, getY(), getHeading());
+    }
+
+    public void setY(double y) {
+        setPose(getX(), y, getHeading());
+    }
+
+    public void setHeading(double h) {
+        headingOffset -= getHeading() - h;
+        setPose(getX(), getY(), h);
     }
 
     public void updatePose(Telemetry telemetry) {
