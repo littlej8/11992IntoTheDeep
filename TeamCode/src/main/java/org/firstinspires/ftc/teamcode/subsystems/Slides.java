@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -8,12 +9,13 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.util.PIDController;
 
+@Config
 public class Slides implements Subsystem {
     DcMotorEx slideMotor;
-    public static double Kp = 0.0;
+    public static double Kp = 0.5;
     public static double Ki = 0.0;
     public static double Kd = 0.0;
-    public static double Kf = 0.0;
+    public static double Kf = 0.1;
     public static PIDController slideController = new PIDController(0, 0, 0);
     public static double current = 0, target = 0;
     public static double FINISH_DIST = 1.0;
@@ -45,6 +47,7 @@ public class Slides implements Subsystem {
     }
 
     public Slides(HardwareMap hw, Telemetry tel) {
+        this(hw);
         telemetry = tel;
     }
 

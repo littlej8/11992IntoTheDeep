@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 @TeleOp
-public class MotorTester extends LinearOpMode {
+public class MotorTesterAS extends LinearOpMode {
     public static double MOTOR_POWER = 0.2;
     public static String MOTOR_NAME = "Arm";
     public static double degPerTick = (360 / 1497.325 / 2);
