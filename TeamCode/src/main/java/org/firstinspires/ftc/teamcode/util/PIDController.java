@@ -41,6 +41,7 @@ public class PIDController {
 
     public double update(double current, double target) {
         double error = target - current;
+        double timePassed = (timer.seconds() > 0.5) ? 0.1 : timer.seconds();
 
         if (wrap) {
             while (error > Math.PI)
@@ -49,8 +50,10 @@ public class PIDController {
                 error += 2 * Math.PI;
         }
 
-        sumError += error * timer.seconds();
-        double d = (error - prevError) / timer.seconds();
+        sumError += error * timePassed;
+        double d = (error - prevError) / timePassed;
+
+        timer.reset();
 
         return (error * Kp) + (sumError * Ki) + (d * Kd);
     }
