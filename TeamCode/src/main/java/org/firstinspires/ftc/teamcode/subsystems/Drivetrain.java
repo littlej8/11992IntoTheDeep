@@ -26,9 +26,9 @@ public class Drivetrain implements Subsystem {
 
     Telemetry tel = null;
 
-    public static double xP = 1, xI = 0, xD = 0.1;
-    public static double yP = 1, yI = 0, yD = 0.1;
-    public static double hP = 6, hI = 0, hD = 1;
+    public static double xP = 1, xI = 0, xD = 0.005;
+    public static double yP = 1, yI = 0, yD = 0.005;
+    public static double hP = 6, hI = 0, hD = 0.03;
     PIDController xPID = new PIDController(xP, xI, xD),
             yPID = new PIDController(yP, yI, yD),
             hPID = new PIDController(hP, hI, hD, true);

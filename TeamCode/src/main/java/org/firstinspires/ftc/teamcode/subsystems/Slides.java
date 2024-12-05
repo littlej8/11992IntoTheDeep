@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.subsystems.actions.Action;
 import org.firstinspires.ftc.teamcode.util.PIDController;
 
 @Config
@@ -68,6 +69,27 @@ public class Slides implements Subsystem {
 
     public void setTarget(double pos) {
         target = pos;
+    }
+
+    public Action goToAction(Position pos) {
+        return goToAction(enumToPos(pos));
+    }
+
+    public Action goToAction(double pos) {
+        return new Action() {
+            boolean init = false;
+            @Override
+            public boolean run(Telemetry telemetry) {
+                if (!init) {
+                    setTarget(pos);
+                    init = true;
+                }
+
+                update(telemetry);
+
+                return !atPosition();
+            }
+        };
     }
 
     public void goToPosition(double pos, Telemetry tel) {

@@ -1,8 +1,8 @@
 package org.firstinspires.ftc.teamcode.opmodes.testing;
 
-import android.transition.Slide;
-
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -12,34 +12,35 @@ import org.firstinspires.ftc.teamcode.subsystems.Slides;
 @TeleOp
 
 @Config
-public class SlidesTest extends LinearOpMode {
+public class SlidesTestDirect extends LinearOpMode {
     public static double pos = 0;
+    public static double min = 0;
+    public static double max = 28;
+    public static double wait = 1.0;
     @Override
     public void runOpMode() {
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
         Slides slides = new Slides(hardwareMap, telemetry);
 
         waitForStart();
 
         ElapsedTime timer = new ElapsedTime();
 
-        double inc = 5;
-
         while (opModeIsActive()) {
-            pos += inc * timer.seconds();
-
-            if (pos > 25) {
-                inc = -inc;
+            if (timer.seconds() > wait && pos == min) {
+                pos = max;
+                timer.reset();
             }
 
-            if (pos < 5) {
-                inc = - inc;
+            if (timer.seconds() > wait && pos == max) {
+                pos = min;
+                timer.reset();
             }
 
             slides.setTarget(pos);
             slides.update(telemetry);
             telemetry.update();
-
-            timer.reset();
         }
     }
 }

@@ -130,6 +130,22 @@ public class Robot implements Subsystem {
         };
     }
 
+    public Action armAction(double deg) {
+        if (arm == null) {
+            return new WaitAction(2000);
+        }
+
+        return arm.goToAction(deg);
+    }
+
+    public Action slidesAction(double pos) {
+        if (slides == null) {
+            return new WaitAction(2000);
+        }
+
+        return slides.goToAction(pos);
+    }
+
     public Action lowerArmAction() {
         if (arm == null) {
             return new WaitAction(2000);

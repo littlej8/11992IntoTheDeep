@@ -31,17 +31,20 @@ public class PushAuto extends LinearOpMode {
                 robot.moveAction(2, 24, 90),
                 noSlipAllowed(),
                 robot.moveAction(2, 4, 90),
-                robot.moveAction(54, 4, 90),
-                robot.moveAction(54, 14, 0),
-                robot.moveAction(4, 14, 0),
+                robot.moveAction(64, 4, 90),
+                robot.moveAction(64, 18, 0),
+                robot.moveAction(6, 24, -15),
                 noSlipAllowed(),
-                robot.moveAction(54, 14, 0),
-                robot.moveAction(54, 22, 0),
-                robot.moveAction(6, 22, 0),
+                robot.moveAction(64, 18, 0),
+                robot.moveAction(64, 28, 0),
+                robot.moveAction(6, 28, 0),
                 noSlipAllowed(),
-                robot.moveAction(54, 22, 0),
-                robot.moveAction(54, 30, 0),
-                robot.moveAction(8, 30, 0)
+                robot.moveAction(64, 28, 0),
+                robot.moveAction(64, 40, 0),
+                robot.moveAction(8, 40, 0),
+                robot.moveAction(24, 42, 0),
+                robot.moveAction(24, -84, 0),
+                robot.moveAction(0, -100, 0)
         );
 
         waitForStart();
