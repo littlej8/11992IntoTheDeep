@@ -26,9 +26,9 @@ public class Drivetrain implements Subsystem {
 
     Telemetry tel = null;
 
-    public static double xP = 1, xI = 0, xD = 0.005;
-    public static double yP = 1, yI = 0, yD = 0.005;
-    public static double hP = 6, hI = 0, hD = 0.03;
+    public static double xP = 0.025, xI = 0.0, xD = 0.005;
+    public static double yP = 0.025, yI = 0.0, yD = 0.005;
+    public static double hP = 3, hI = 0, hD = 0.005;
     PIDController xPID = new PIDController(xP, xI, xD),
             yPID = new PIDController(yP, yI, yD),
             hPID = new PIDController(hP, hI, hD, true);
@@ -42,7 +42,7 @@ public class Drivetrain implements Subsystem {
     public static double STRAFE_GAIN = 1.268493;
     public static double MAX_WHEEL_POWER = 0.5;
 
-    public static double LINEAR_FINISH_DIST = 0.3;
+    public static double LINEAR_FINISH_DIST = 1.0;
     public static double ANGULAR_FINISH_DIST = Math.toRadians(5.0);
 
     //fl, fr, bl, br

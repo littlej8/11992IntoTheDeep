@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -127,6 +128,26 @@ public class Robot implements Subsystem {
             dt.updatePose(telemetry);
             dt.updateMovement(telemetry);
             return false;
+        };
+    }
+
+    public Action relocalizeAction(Pose2d newPose) {
+        return new Action() {
+            @Override
+            public boolean run(Telemetry telemetry) {
+                dt.setPose(newPose);
+                return false;
+            }
+        };
+    }
+
+    public Action relocalizeAction(Vector2d newLinear) {
+        return new Action() {
+            @Override
+            public boolean run(Telemetry telemetry) {
+                dt.setPose(new Pose2d(newLinear, dt.getHeading()));
+                return false;
+            }
         };
     }
 

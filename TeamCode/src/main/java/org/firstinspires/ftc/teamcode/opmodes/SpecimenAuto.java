@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -22,6 +23,13 @@ public class SpecimenAuto extends LinearOpMode {
     // ram into the wall to reset position then grab
     private Action grabAction() {
         return new ActionSequence(
+                robot.moveAndAction(0, -36, -90, 0.3, robot.armToGrabAction()),
+                new UntilAction(
+                    robot.grabSpecimenAction(),
+                    robot.maintainPositionAction()
+                )
+        );
+        /*return new ActionSequence(
                 new UntilAction(
                         new WaitAction(500),
                         telemetry -> {
@@ -38,7 +46,7 @@ public class SpecimenAuto extends LinearOpMode {
                             return false;
                         }
                 )
-        );
+        );*/
     }
 
     @Override
@@ -52,20 +60,18 @@ public class SpecimenAuto extends LinearOpMode {
                 new UntilAction(robot.hookSpecimenAction(), robot.maintainPositionAction()),
                 robot.moveAndAction(18, -32, 90, robot.lowerArmAction()),
                 robot.moveAction(60, -32, 90),
-                robot.moveAction(60, -48, 180),
-                robot.moveAction(3, -48, 180, 0.8),
-                robot.moveAndAction(0, -36, -90, robot.armToGrabAction()),
+                robot.moveAction(60, -50, 180),
+                robot.moveAction(8, -50, 180, 0.4),
+                robot.relocalizeAction(new Vector2d(13, -52)),
+                robot.moveAndAction(13, -36, -90, robot.armToGrabAction()),
                 grabAction(),
                 robot.moveAndAction(30, 4, 90, robot.highBarAction()),
                 new UntilAction(robot.hookSpecimenAction(), robot.maintainPositionAction()),
-                robot.moveAndAction(0, -36, -90, robot.armToGrabAction()),
+                robot.moveAndAction(13, -36, -90, robot.armToGrabAction()),
                 grabAction(),
                 robot.moveAndAction(30, 8, 90, robot.highBarAction()),
                 new UntilAction(robot.hookSpecimenAction(), robot.maintainPositionAction()),
-                new ActionSequence(
-                        robot.moveAction(26, 8, 150),
-                        robot.moveAndAction(5, -54, 150, 1.0, robot.lowerArmAction())
-                )
+                robot.moveAndAction(0, -54, 90, robot.lowerArmAction())
         );
 
         /* fudged numbers that might work better

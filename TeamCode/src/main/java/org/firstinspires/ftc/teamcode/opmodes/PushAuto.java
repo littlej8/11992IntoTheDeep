@@ -41,10 +41,10 @@ public class PushAuto extends LinearOpMode {
                 noSlipAllowed(),
                 robot.moveAction(64, 28, 0),
                 robot.moveAction(64, 40, 0),
-                robot.moveAction(8, 40, 0),
-                robot.moveAction(24, 42, 0),
+                robot.moveAction(8, 40, 0)
+                /*robot.moveAction(24, 42, 0),
                 robot.moveAction(24, -84, 0),
-                robot.moveAction(0, -100, 0)
+                robot.moveAction(0, -100, 0)*/
         );
 
         waitForStart();

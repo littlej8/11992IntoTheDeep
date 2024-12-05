@@ -34,8 +34,8 @@ public class SampleAuto extends LinearOpMode {
                 new UntilAction(robot.grabSampleAction(), robot.maintainPositionAction()),
                 robot.moveAndAction(16, 32, -135, robot.highBasketAction()),
                 new UntilAction(robot.dropSampleAction(), robot.maintainPositionAction()),
-                robot.moveAndAction(64, 24, 0, 1.0, robot.highBarAction()),
-                robot.moveAndAction(64, -6, 0, 1.0, robot.highBarAction())
+                robot.moveAndAction(64, 24, 0, robot.highBarAction()),
+                robot.moveAndAction(64, -6, 0, robot.highBarAction())
         );
 
         waitForStart();
