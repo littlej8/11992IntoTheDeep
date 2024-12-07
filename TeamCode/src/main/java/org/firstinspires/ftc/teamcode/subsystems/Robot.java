@@ -70,18 +70,18 @@ public class Robot implements Subsystem {
     @Override
     public void update(Telemetry telemetry) {
         vision.updateVisionPose();
-        if (actionsDone()) {
-            dt.updatePose(telemetry);
-        } else {
-            scheduler.runNextAction(telemetry);
-        }
         Pose2d latestPose = vision.getLatestPose();
         if (latestPose != null && vision.latestPoseValid()) {
             dt.setPose(latestPose);
             telemetry.addData("Latest Vision Pose", "%6.1f, %6.1f, %6.1f", latestPose.position.x, latestPose.position.y, latestPose.heading.toDouble());
             telemetry.addData("Time since last vision pose", System.currentTimeMillis() - vision.getTimeStamp());
         }
-        drawRobot();
+        if (actionsDone()) {
+            dt.updatePose(telemetry);
+            drawRobot();
+        } else {
+            scheduler.runNextAction(telemetry);
+        }
     }
 
     public Action moveAction(double x, double y, double h, double speed) {
