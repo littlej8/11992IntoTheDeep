@@ -18,8 +18,8 @@ public class Arm implements Subsystem {
     public static double Kd = 0.4;
     public static double Kf = 0.35;
     public static PIDController controller = new PIDController(0, 0, 0);
-    public static double current = 0, target = 0;
-    public static double degPerTick = 360.0 / 384.5;
+    public static double current = -50, target = 0;
+    public static double degPerTick = 360.0 / (1497.325 * 2.0);
     public static double startTicks = -5;
     public static double ANGLE_FINISH_DIST = 5;
 

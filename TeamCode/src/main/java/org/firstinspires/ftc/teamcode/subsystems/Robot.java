@@ -14,12 +14,14 @@ import org.firstinspires.ftc.teamcode.subsystems.actions.ActionScheduler;
 import org.firstinspires.ftc.teamcode.subsystems.actions.ActionSequence;
 import org.firstinspires.ftc.teamcode.subsystems.actions.UntilAction;
 import org.firstinspires.ftc.teamcode.subsystems.actions.WaitAction;
+import org.firstinspires.ftc.teamcode.subsystems.vision.VisionLocalizer;
 import org.firstinspires.ftc.teamcode.util.NullTelemetry;
 
 public class Robot implements Subsystem {
     ActionScheduler scheduler = new ActionScheduler();
     Telemetry telemetry;
     public Drivetrain dt;
+    public VisionLocalizer vision;
     public Claw claw;
     public Arm arm;
     public Slides slides;
@@ -27,6 +29,7 @@ public class Robot implements Subsystem {
     public Robot(HardwareMap hw, Telemetry telemetry, Pose2d startPose) {
         this.telemetry = telemetry;
         dt = new Drivetrain(hw, telemetry, startPose);
+        vision = new VisionLocalizer(hw);
         arm = new Arm(hw, telemetry);
         slides = new Slides(hw, telemetry);
         claw = new Claw(hw);
@@ -44,6 +47,7 @@ public class Robot implements Subsystem {
         this.telemetry = telemetry;
         if (onlyDt) {
             dt = new Drivetrain(hw, telemetry, startPose);
+            vision = new VisionLocalizer(hw);
         } else {
             arm = new Arm(hw, telemetry);
             slides = new Slides(hw, telemetry);
@@ -65,7 +69,19 @@ public class Robot implements Subsystem {
 
     @Override
     public void update(Telemetry telemetry) {
-        scheduler.runNextAction(telemetry);
+        vision.updateVisionPose();
+        if (actionsDone()) {
+            dt.updatePose(telemetry);
+        } else {
+            scheduler.runNextAction(telemetry);
+        }
+        Pose2d latestPose = vision.getLatestPose();
+        if (latestPose != null && vision.latestPoseValid()) {
+            dt.setPose(latestPose);
+            telemetry.addData("Latest Vision Pose", "%6.1f, %6.1f, %6.1f", latestPose.position.x, latestPose.position.y, latestPose.heading.toDouble());
+            telemetry.addData("Time since last vision pose", System.currentTimeMillis() - vision.getTimeStamp());
+        }
+        drawRobot();
     }
 
     public Action moveAction(double x, double y, double h, double speed) {
@@ -119,7 +135,7 @@ public class Robot implements Subsystem {
         c.setStrokeWidth(1);
         c.strokeCircle(dt.getX(), dt.getY(), 9);
 
-        Vector2d halfv = Rotation2d.fromDouble(dt.getHeading()).vec().times(0.5 * 9);
+        Vector2d halfv = Rotation2d.fromDouble(dt.getHeading() + Math.PI/2).vec().times(0.5 * 9);
         Vector2d p1 = new Vector2d(dt.getX(), dt.getY()).plus(halfv);
         Vector2d p2 = p1.plus(halfv);
         c.strokeLine(p1.x, p1.y, p2.x, p2.y);
