@@ -3,21 +3,17 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystems.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.actions.Action;
 import org.firstinspires.ftc.teamcode.subsystems.actions.ActionSequence;
-import org.firstinspires.ftc.teamcode.subsystems.actions.ParallelAction;
 import org.firstinspires.ftc.teamcode.subsystems.actions.UntilAction;
-import org.firstinspires.ftc.teamcode.subsystems.actions.WaitAction;
 
-@Autonomous(name = "Specimen Auto", preselectTeleOp = "MainTeleOp")
-public class SpecimenAuto extends LinearOpMode {
+@Autonomous(name = "Specimen Auto Blue", preselectTeleOp = "MainTeleOp")
+public class SpecimenAutoBlue extends LinearOpMode {
     Robot robot;
 
     // ram into the wall to reset position then grab
@@ -53,25 +49,25 @@ public class SpecimenAuto extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        robot = new Robot(hardwareMap, telemetry, new Pose2d(0, 0, Math.toRadians(90)), true);
+        robot = new Robot(hardwareMap, telemetry, new Pose2d(0, 0, Math.toRadians(180)), true);
 
         robot.schedule(
-                robot.moveAndAction(30, 0, 90, 0.3, robot.highBarAction()),
+                robot.moveAndAction(0, 30, 180, 0.3, robot.highBarAction()),
                 new UntilAction(robot.hookSpecimenAction(), robot.maintainPositionAction()),
-                robot.moveAndAction(18, -32, 90, robot.lowerArmAction()),
-                robot.moveAction(60, -32, 90),
-                robot.moveAction(60, -50, 180),
-                robot.moveAction(8, -50, 180, 0.4),
-                robot.relocalizeAction(new Vector2d(13, -52)),
-                robot.moveAndAction(13, -36, -90, robot.armToGrabAction()),
+                robot.moveAndAction(-32, 18, 180, robot.lowerArmAction()),
+                robot.moveAction(-32, 60, 180),
+                robot.moveAction(-50, 60, -90),
+                robot.moveAction(-50, 8, -90, 0.4),
+                //robot.relocalizeAction(new Vector2d(13, -52)),
+                robot.moveAndAction(-36, 13, 0, robot.armToGrabAction()),
                 grabAction(),
-                robot.moveAndAction(30, 4, 90, robot.highBarAction()),
+                robot.moveAndAction(4, 30, 180, robot.highBarAction()),
                 new UntilAction(robot.hookSpecimenAction(), robot.maintainPositionAction()),
-                robot.moveAndAction(13, -36, -90, robot.armToGrabAction()),
+                robot.moveAndAction(-36, 13, 0, robot.armToGrabAction()),
                 grabAction(),
-                robot.moveAndAction(30, 8, 90, robot.highBarAction()),
+                robot.moveAndAction(8, 30, 180, robot.highBarAction()),
                 new UntilAction(robot.hookSpecimenAction(), robot.maintainPositionAction()),
-                robot.moveAndAction(0, -54, 90, robot.lowerArmAction())
+                robot.moveAndAction(-54, 0, 180, robot.lowerArmAction())
         );
 
         /* fudged numbers that might work better

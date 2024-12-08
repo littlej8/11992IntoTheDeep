@@ -20,9 +20,9 @@ import java.util.List;
 
 public class VisionLocalizer {
     private Position cameraPosition = new Position(DistanceUnit.INCH,
-            0, 0, 0, 0);
+            0, -8, 0, 0);
     private YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES,
-            0, -90, 0, 0);
+            180, -90, 0, 0);
 
     private AprilTagProcessor aprilTag;
 
@@ -88,6 +88,10 @@ public class VisionLocalizer {
     }
 
     public boolean latestPoseValid() {
-        return (System.currentTimeMillis() - timeStamp) < 25;
+        return (System.currentTimeMillis() - timeStamp) < 25 &&
+                latestPose.position.x > -72 &&
+                latestPose.position.x < 72 &&
+                latestPose.position.y > -72 &&
+                latestPose.position.y < 72;
     }
 }

@@ -45,6 +45,9 @@ public class Drivetrain implements Subsystem {
     public static double LINEAR_FINISH_DIST = 1.0;
     public static double ANGULAR_FINISH_DIST = Math.toRadians(5.0);
 
+    boolean driveRelativeToStart = true;
+    Pose2d startPose = null;
+
     //fl, fr, bl, br
     double[] prevWheels = new double[]{0, 0, 0, 0}, wheels = new double[]{0, 0, 0, 0};
     double prevHeading;
@@ -52,6 +55,7 @@ public class Drivetrain implements Subsystem {
     ElapsedTime timer;
 
     public Drivetrain(HardwareMap hw, Pose2d startPose) {
+        this.startPose = startPose;
         pose = startPose;
         headingOffset = pose.heading.toDouble();
         targetPose = startPose;
@@ -108,6 +112,10 @@ public class Drivetrain implements Subsystem {
         tel = t;
     }
 
+    public void setDriveRelativeToStart(boolean driveRelativeToStart) {
+        this.driveRelativeToStart = driveRelativeToStart;
+    }
+
     public Pose2d getPose() {
         return pose;
     }
@@ -122,6 +130,14 @@ public class Drivetrain implements Subsystem {
 
     public Pose2d getTargetPose() {
         return targetPose;
+    }
+
+    public void setTargetPose(Pose2d targetPose) {
+        if (driveRelativeToStart) {
+            this.targetPose = new Pose2d(targetPose.position.plus(startPose.position), targetPose.heading);
+        } else {
+            this.targetPose = targetPose;
+        }
     }
 
     public double getX() {
@@ -352,9 +368,5 @@ public class Drivetrain implements Subsystem {
     public void debug(Telemetry telemetry) {
         telemetry.addData("Loop Time", "%f hz", 1 / timer.seconds());
         timer.reset();
-    }
-
-    public void setTargetPose(Pose2d targetPose) {
-        this.targetPose = targetPose;
     }
 }

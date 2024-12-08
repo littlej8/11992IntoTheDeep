@@ -10,32 +10,32 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.subsystems.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.actions.UntilAction;
 
-@Autonomous(name = "Sample Auto", preselectTeleOp = "MainTeleOp")
-public class SampleAuto extends LinearOpMode {
+@Autonomous(name = "Sample Auto Blue", preselectTeleOp = "MainTeleOp")
+public class SampleAutoBlue extends LinearOpMode {
     Robot robot;
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        robot = new Robot(hardwareMap, telemetry, new Pose2d(0, 0, Math.toRadians(90)), true);
+        robot = new Robot(hardwareMap, telemetry, new Pose2d(0, 0, Math.toRadians(180)), true);
 
         robot.schedule(
-                robot.moveAndAction(16, 32, -135, robot.highBasketAction()),
+                robot.moveAndAction(32, 16, -45, robot.highBasketAction()),
                 new UntilAction(robot.dropSampleAction(), robot.maintainPositionAction()),
-                robot.moveAndAction(32, 24, 90, robot.lowerArmAction()),
+                robot.moveAndAction(24, 32, 180, robot.lowerArmAction()),
                 new UntilAction(robot.grabSampleAction(), robot.maintainPositionAction()),
-                robot.moveAndAction(16, 32, -135, robot.highBasketAction()),
+                robot.moveAndAction(32, 16, -45, robot.highBasketAction()),
                 new UntilAction(robot.dropSampleAction(), robot.maintainPositionAction()),
-                robot.moveAndAction(32, 32, 90, robot.lowerArmAction()),
+                robot.moveAndAction(32, 32, 180, robot.lowerArmAction()),
                 new UntilAction(robot.grabSampleAction(), robot.maintainPositionAction()),
-                robot.moveAndAction(16, 32, -135, robot.highBasketAction()),
+                robot.moveAndAction(32, 16, -45, robot.highBasketAction()),
                 new UntilAction(robot.dropSampleAction(), robot.maintainPositionAction()),
-                robot.moveAndAction(32, 32, 135, robot.lowerArmAction()),
+                robot.moveAndAction(32, 32, -135, robot.lowerArmAction()),
                 new UntilAction(robot.grabSampleAction(), robot.maintainPositionAction()),
-                robot.moveAndAction(16, 32, -135, robot.highBasketAction()),
+                robot.moveAndAction(32, 16, -45, robot.highBasketAction()),
                 new UntilAction(robot.dropSampleAction(), robot.maintainPositionAction()),
-                robot.moveAndAction(64, 24, 0, robot.highBarAction()),
-                robot.moveAndAction(64, -6, 0, robot.highBarAction())
+                robot.moveAndAction(24, 64, 90, robot.highBarAction()),
+                robot.moveAndAction(-6, 64, 90, robot.highBarAction())
         );
 
         waitForStart();
