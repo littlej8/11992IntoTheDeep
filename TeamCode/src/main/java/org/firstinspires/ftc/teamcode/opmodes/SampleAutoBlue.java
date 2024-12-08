@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.subsystems.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.actions.UntilAction;
+import org.firstinspires.ftc.teamcode.util.PoseSingleton;
 
 @Autonomous(name = "Sample Auto Blue", preselectTeleOp = "MainTeleOp")
 public class SampleAutoBlue extends LinearOpMode {
@@ -50,5 +51,7 @@ public class SampleAutoBlue extends LinearOpMode {
             telemetry.addData("time", finishTime);
             telemetry.update();
         }
+
+        PoseSingleton.getInstance().setPose(robot.dt.getPose());
     }
 }

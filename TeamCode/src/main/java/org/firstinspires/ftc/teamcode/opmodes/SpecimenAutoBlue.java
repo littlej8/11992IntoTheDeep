@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.actions.Action;
 import org.firstinspires.ftc.teamcode.subsystems.actions.ActionSequence;
 import org.firstinspires.ftc.teamcode.subsystems.actions.UntilAction;
+import org.firstinspires.ftc.teamcode.util.PoseSingleton;
 
 @Autonomous(name = "Specimen Auto Blue", preselectTeleOp = "MainTeleOp")
 public class SpecimenAutoBlue extends LinearOpMode {
@@ -102,5 +103,7 @@ public class SpecimenAutoBlue extends LinearOpMode {
             telemetry.addData("time", finishTime);
             telemetry.update();
         }
+
+        PoseSingleton.getInstance().setPose(robot.dt.getPose());
     }
 }

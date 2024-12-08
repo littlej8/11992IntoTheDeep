@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.google.ar.core.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -11,6 +12,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.actions.Action;
 import org.firstinspires.ftc.teamcode.subsystems.actions.UntilAction;
 import org.firstinspires.ftc.teamcode.subsystems.actions.WaitAction;
+import org.firstinspires.ftc.teamcode.util.PoseSingleton;
 
 @Autonomous(name = "Push Auto Blue", preselectTeleOp = "MainTeleOp")
 public class PushAutoBlue extends LinearOpMode {
@@ -58,5 +60,7 @@ public class PushAutoBlue extends LinearOpMode {
             telemetry.addData("time", finishTime);
             telemetry.update();
         }
+
+        PoseSingleton.getInstance().setPose(robot.dt.getPose());
     }
 }
