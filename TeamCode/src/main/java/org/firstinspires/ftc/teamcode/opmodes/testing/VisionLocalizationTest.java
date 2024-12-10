@@ -16,7 +16,7 @@ public class VisionLocalizationTest extends LinearOpMode {
         Robot robot = new Robot(hardwareMap, telemetry, new Pose2d(0, 0, 0), true);
         waitForStart();
         while (opModeIsActive()) {
-            robot.update(telemetry);
+            robot.updateWithVision(telemetry);
             telemetry.update();
         }
     }

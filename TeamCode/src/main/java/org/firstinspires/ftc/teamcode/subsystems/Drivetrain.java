@@ -23,11 +23,12 @@ public class Drivetrain implements Subsystem {
     IMU imu;
     double headingOffset;
     Pose2d pose, targetPose;
+    Pose2d velocity = new Pose2d(0, 0, 0);
 
     Telemetry tel = null;
 
-    public static double xP = 0.025, xI = 0.0, xD = 0.005;
-    public static double yP = 0.025, yI = 0.0, yD = 0.005;
+    public static double xP = 0.0125, xI = 0.0, xD = 0.005;
+    public static double yP = 0.0125, yI = 0.0, yD = 0.005;
     public static double hP = 3, hI = 0, hD = 0.005;
     PIDController xPID = new PIDController(xP, xI, xD),
             yPID = new PIDController(yP, yI, yD),
@@ -51,6 +52,7 @@ public class Drivetrain implements Subsystem {
     //fl, fr, bl, br
     double[] prevWheels = new double[]{0, 0, 0, 0}, wheels = new double[]{0, 0, 0, 0};
     double prevHeading;
+    double lastUpdate = System.currentTimeMillis();
 
     ElapsedTime timer;
 
@@ -88,7 +90,7 @@ public class Drivetrain implements Subsystem {
         fl.setDirection(DcMotorSimple.Direction.REVERSE);
         bl.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.FORWARD;
+        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.BACKWARD;
         RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.UP;
         RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
         imu = hw.get(IMU.class, "imu");
@@ -203,8 +205,8 @@ public class Drivetrain implements Subsystem {
 
         Twist2d twist = new Twist2d(
                 new Vector2d(
-                        -(xrot * curCos - yrot * curSin),
-                        xrot * curSin + yrot * curCos),
+                        -(xrot * curCos - yrot * curSin), // TODO: MAYBE MAKE POSITIVE
+                        -(xrot * curSin + yrot * curCos)),
                 dtheta);
         pose = new Pose2d(pose.position.x + twist.line.x, pose.position.y + twist.line.y, heading);
 
@@ -215,9 +217,18 @@ public class Drivetrain implements Subsystem {
         prevHeading = heading;
 
         if (telemetry != null) {
+            double timeDiff = (System.currentTimeMillis() - lastUpdate) / 1000;
+            double velX = twist.line.x / timeDiff; // in per sec
+            double velY = twist.line.y / timeDiff;
+            double velH = dtheta / timeDiff;
+
+            velocity = new Pose2d(velX, velY, velH);
+
             telemetry.addData("Current Pose", "(%.2f, %.2f, %.2f)", pose.position.x, pose.position.y, Math.toDegrees(pose.heading.toDouble()));
-            telemetry.addData("Velocity", "(%.2f, %.2f, %.2f)", twist.line.x, twist.line.y, Math.toDegrees(dtheta));
+            telemetry.addData("Velocity", "(%.2f, %.2f, %.2f)", velX, velY, velH);
         }
+
+        lastUpdate = System.currentTimeMillis();
     }
 
     public void updatePose() {
@@ -261,7 +272,7 @@ public class Drivetrain implements Subsystem {
 
     public double[] setFieldPowers(double x, double y, double h) {
         Vector2d vec = new Vector2d(x, y);
-        vec = rotateVec(vec, -imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
+        vec = rotateVec(vec, -pose.heading.toDouble());
         return setDrivePowers(vec, h);
     }
 
@@ -280,8 +291,8 @@ public class Drivetrain implements Subsystem {
         yPID.setPID(yP, yI, yD);
         hPID.setPID(hP, hI, hD);
 
-        double xPower = xPID.update(pose.position.x, targetPose.position.x);
-        double yPower = yPID.update(pose.position.y, targetPose.position.y);
+        double xPower = xPID.update(pose.position.x, targetPose.position.x); //TODO: MAYBE MAKE NEGATIVE
+        double yPower = -yPID.update(pose.position.y, targetPose.position.y);
         double hPower = hPID.update(pose.heading.toDouble(), targetPose.heading.toDouble());
 
         if (Math.abs(xPower) < 0.03)

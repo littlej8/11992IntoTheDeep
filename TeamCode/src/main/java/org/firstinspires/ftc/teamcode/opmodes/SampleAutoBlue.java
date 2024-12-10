@@ -18,7 +18,7 @@ public class SampleAutoBlue extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        robot = new Robot(hardwareMap, telemetry, new Pose2d(0, 0, Math.toRadians(180)), true);
+        robot = new Robot(hardwareMap, telemetry, new Pose2d(32, 64, Math.toRadians(180)), true);
 
         robot.schedule(
                 robot.moveAndAction(32, 16, -45, robot.highBasketAction()),

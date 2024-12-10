@@ -88,10 +88,6 @@ public class VisionLocalizer {
     }
 
     public boolean latestPoseValid() {
-        return (System.currentTimeMillis() - timeStamp) < 25 &&
-                latestPose.position.x > -72 &&
-                latestPose.position.x < 72 &&
-                latestPose.position.y > -72 &&
-                latestPose.position.y < 72;
+        return (System.currentTimeMillis() - timeStamp) < 100;
     }
 }
