@@ -16,14 +16,18 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.util.PIDController;
+import org.firstinspires.ftc.teamcode.util.PoseKalmanFilter;
 
 @Config
 public class Drivetrain implements Subsystem {
     DcMotorEx fl, fr, bl, br;
     IMU imu;
     double headingOffset;
-    Pose2d pose, targetPose;
+    Pose2d pose, targetPose, visionUpdate;
+    double visionTimeStamp = System.currentTimeMillis();
     Pose2d velocity = new Pose2d(0, 0, 0);
+
+    PoseKalmanFilter kalmanFilter = new PoseKalmanFilter(0.1, 0.4);
 
     Telemetry tel = null;
 
@@ -130,6 +134,11 @@ public class Drivetrain implements Subsystem {
         setPose(new Pose2d(x, y, heading));
     }
 
+    public void addVisionUpdate(Pose2d visionUpdate, double timeStamp) {
+        this.visionUpdate = visionUpdate;
+        visionTimeStamp = timeStamp;
+    }
+
     public Pose2d getTargetPose() {
         return targetPose;
     }
@@ -209,6 +218,11 @@ public class Drivetrain implements Subsystem {
                         -(xrot * curSin + yrot * curCos)),
                 dtheta);
         pose = new Pose2d(pose.position.x + twist.line.x, pose.position.y + twist.line.y, heading);
+        if (System.currentTimeMillis() - visionTimeStamp < 100 && visionUpdate != null) {
+            pose = kalmanFilter.update(pose, visionUpdate);
+        } else {
+            pose = kalmanFilter.update(pose, pose);
+        }
 
         prevWheels[0] = wheels[0];
         prevWheels[1] = wheels[1];
