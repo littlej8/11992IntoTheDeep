@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems.vision;
 
 import android.util.Size;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -18,7 +19,11 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.ArrayList;
 import java.util.List;
 
+@Config
 public class VisionLocalizer {
+    public static double X_MODIFIER = 11;
+    public static double Y_MODIFIER = -2;
+
     private Position cameraPosition = new Position(DistanceUnit.INCH,
             0, -8, 0, 0);
     private YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES,
@@ -58,7 +63,7 @@ public class VisionLocalizer {
                 continue;
             Position robotPose = detection.robotPose.getPosition();
             double yaw = detection.robotPose.getOrientation().getYaw(AngleUnit.RADIANS);
-            poses.add(new Pose2d(robotPose.x, robotPose.y, yaw));
+            poses.add(new Pose2d(-robotPose.x, robotPose.y, yaw));
         }
 
         if (poses.isEmpty())
@@ -74,7 +79,7 @@ public class VisionLocalizer {
             angle += pose.heading.toDouble();
         }
 
-        latestPose = new Pose2d(x / poses.size(), y / poses.size(), angle / poses.size());
+        latestPose = new Pose2d(x / poses.size() + X_MODIFIER, y / poses.size() + Y_MODIFIER, angle / poses.size());
         timeStamp = System.currentTimeMillis();
         return true;
     }

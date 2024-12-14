@@ -10,18 +10,23 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystems.actions.Action;
 import org.firstinspires.ftc.teamcode.subsystems.actions.WaitAction;
 import org.firstinspires.ftc.teamcode.util.PIDController;
+import org.opencv.core.Mat;
 
 public class Arm implements Subsystem {
-    DcMotorEx armMotor;
-    public static double Kp = 1.5;
+    DcMotorEx leftMotor, rightMotor;
+    public static double Kp = 1.0;
     public static double Ki = 0.0;
-    public static double Kd = 0.4;
-    public static double Kf = 0.35;
-    public static PIDController controller = new PIDController(0, 0, 0);
-    public static double current = -50, target = 0;
-    public static double degPerTick = 360.0 / (1497.325 * 2.0);
-    public static double startTicks = -5;
-    public static double ANGLE_FINISH_DIST = 5;
+    public static double Kd = 0.0;//0.4;
+    public static double Kf = 0.4;//0.35;
+    PIDController leftController = new PIDController(0, 0, 0),
+                                rightController = new PIDController(0, 0, 0);
+    double left = -50, right = -50;
+    double degPerTick = 360.0 / 1497.325;
+    public static double start_angle = -50;
+    double target = 0;
+    double profileTarget = 0, lastTarget = 0, lastUpdate = System.currentTimeMillis();
+    public static double DEG_PER_SEC = 45;
+    public static double ANGLE_FINISH_DIST = 10;
 
     Telemetry telemetry = null;
 
@@ -40,10 +45,14 @@ public class Arm implements Subsystem {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
 
-        armMotor = hw.get(DcMotorEx.class, "Arm");
+        leftMotor = hw.get(DcMotorEx.class, "armleft");
+        rightMotor = hw.get(DcMotorEx.class, "armright");
 
-        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        leftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public Arm(HardwareMap hw, Telemetry tel) {
@@ -67,11 +76,13 @@ public class Arm implements Subsystem {
     }
 
     public void setTarget(double deg) {
+        lastUpdate = System.currentTimeMillis();
+        lastTarget = target;
         target = deg;
     }
 
     public double getArmPosition() {
-        return current;
+        return (left + right) / 2;
     }
 
     public Action goToAction(Position pos) {
@@ -122,30 +133,45 @@ public class Arm implements Subsystem {
     }
 
     public boolean atPosition() {
-        return Math.abs(target - current) < ANGLE_FINISH_DIST;
+        return Math.abs(target - left) < ANGLE_FINISH_DIST && Math.abs(target - right) < ANGLE_FINISH_DIST;
     }
 
     @Override
     public void update(Telemetry tel) {
-        controller.setPID(Kp, Ki, Kd);
+        double timeSinceStart = (System.currentTimeMillis() - lastUpdate) / 1000.0;
+        double totalMoveTime = Math.abs(target - lastTarget) / DEG_PER_SEC;
+        double progress = timeSinceStart / totalMoveTime;
+        profileTarget = lastTarget + ((target - lastTarget) * progress);
 
-        double armEnc = armMotor.getCurrentPosition();
+        leftController.setPID(Kp, Ki, Kd);
+        rightController.setPID(Kp, Ki, Kd);
 
-        double armAngle = Math.toRadians((armEnc + startTicks) * degPerTick);
-        double targetAngle = Math.toRadians(target);
+        double leftEnc = leftMotor.getCurrentPosition();
+        double rightEnc = rightMotor.getCurrentPosition();
 
-        double armPower = controller.update(armAngle, targetAngle) + (Math.cos(armAngle) * Kf);;
+        double leftAngle = Math.toRadians(leftEnc * degPerTick) + Math.toRadians(start_angle);
+        double rightAngle = Math.toRadians(rightEnc * degPerTick) + Math.toRadians(start_angle);
+        double targetAngle = Math.toRadians(profileTarget);
 
-        armMotor.setPower(armPower);
+        double leftPower = leftController.update(leftAngle, targetAngle) + (Math.cos(leftAngle) * Kf);
+        double rightPower = rightController.update(rightAngle, targetAngle) + (Math.cos(rightAngle) * Kf);
+
+        leftMotor.setPower(leftPower);
+        rightMotor.setPower(rightPower);
 
         if (tel != null) {
-            tel.addData("target", Math.toDegrees(targetAngle));
-            tel.addData("arm cur", armEnc);
-            tel.addData("arm angle", Math.toDegrees(armAngle));
-            tel.addData("arm power", armPower);
+            telemetry.addData("target", Math.toDegrees(targetAngle));
+            telemetry.addData("left cur", leftEnc);
+            telemetry.addData("right cur", rightEnc);
+            telemetry.addData("left angle", Math.toDegrees(leftAngle));
+            telemetry.addData("right angle", Math.toDegrees(rightAngle));
+            telemetry.addData("left power", leftPower);
+            telemetry.addData("right power", rightPower);
+            telemetry.update();
         }
 
-        current = armAngle;
+        left = leftAngle;
+        right = rightAngle;
     }
 
     public void update() {

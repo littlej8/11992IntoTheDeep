@@ -18,7 +18,7 @@ public class Slides implements Subsystem {
     public static double Kd = 0.0;
     public static double Kf = 0.1;
     public static PIDController slideController = new PIDController(0, 0, 0);
-    public static double current = 0, target = 0;
+    double current = 0, target = 0;
     public static double FINISH_DIST = 1.0;
 
     public static double pulleyDiameter = 2.0;

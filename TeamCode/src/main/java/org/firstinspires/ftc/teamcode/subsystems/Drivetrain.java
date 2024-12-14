@@ -27,7 +27,10 @@ public class Drivetrain implements Subsystem {
     double visionTimeStamp = System.currentTimeMillis();
     Pose2d velocity = new Pose2d(0, 0, 0);
 
-    PoseKalmanFilter kalmanFilter = new PoseKalmanFilter(0.1, 0.4);
+    // model = drive encoders
+    // vision = april tags
+    // closer to 0 = more trust; closer to 1 = less trust
+    PoseKalmanFilter kalmanFilter = new PoseKalmanFilter(0.4, 0.1);
 
     Telemetry tel = null;
 
@@ -46,6 +49,7 @@ public class Drivetrain implements Subsystem {
     public static double FORWARD_GAIN = 1.063594;
     public static double STRAFE_GAIN = 1.268493;
     public static double MAX_WHEEL_POWER = 0.5;
+    public static double MAX_ADJUSTMENT_POWER = 0.3;
 
     public static double LINEAR_FINISH_DIST = 1.0;
     public static double ANGULAR_FINISH_DIST = Math.toRadians(5.0);
@@ -221,7 +225,7 @@ public class Drivetrain implements Subsystem {
         if (System.currentTimeMillis() - visionTimeStamp < 100 && visionUpdate != null) {
             pose = kalmanFilter.update(pose, visionUpdate);
         } else {
-            pose = kalmanFilter.update(pose, pose);
+            pose = kalmanFilter.predict(pose);
         }
 
         prevWheels[0] = wheels[0];
@@ -298,6 +302,15 @@ public class Drivetrain implements Subsystem {
         double newX = vec.x * Math.cos(angle) - vec.y * Math.sin(angle);
         double newY = vec.x * Math.sin(angle) + vec.y * Math.cos(angle);
         return new Vector2d(newX, newY);
+    }
+
+    public void updateMovement(Telemetry telemetry, boolean adjust) {
+        if (adjust) {
+            double prev = MAX_WHEEL_POWER;
+            MAX_WHEEL_POWER = MAX_ADJUSTMENT_POWER;
+            updateMovement(telemetry);
+            MAX_WHEEL_POWER = prev;
+        }
     }
 
     public void updateMovement(Telemetry telemetry) {

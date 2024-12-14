@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import org.firstinspires.ftc.teamcode.subsystems.Slides;
 import org.firstinspires.ftc.teamcode.util.PIDController;
 import org.firstinspires.ftc.teamcode.util.PIDFController;
 
@@ -17,18 +18,22 @@ import org.firstinspires.ftc.teamcode.util.PIDFController;
 @TeleOp
 public class ArmTest extends LinearOpMode {
     DcMotorEx leftMotor, rightMotor;
-    public static double Kp = 1.5;
+    Slides slides;
+    public static double Kp = 1.0;
     public static double Ki = 0.0;
     public static double Kd = 0.0;
-    public static double Kf = 0.0;
+    public static double Kf = 0.4;
     public static PIDController leftController = new PIDController(0, 0, 0);
     public static PIDController rightController = new PIDController(0, 0, 0);
-    public static int target = 0;
-    public static double ticksToAngle = (145.1) / 360.0;//(1497.325 * 1.75) / 360.0;
-    public static double startAngle = -75.0;
-    public static double max_speed = 0.3;
+    public static double target = 0;
+    public static double slidesTarget = 0;
+    public static double ticksToAngle = (1497.325) / 360.0;//(1497.325 * 1.75) / 360.0;
+    public static double startAngle = -50.0;
+    public static double max_speed = 0.6;
     @Override
     public void runOpMode() throws InterruptedException {
+        slides = new Slides(hardwareMap, telemetry);
+
         leftMotor = hardwareMap.get(DcMotorEx.class, "armleft");
         rightMotor = hardwareMap.get(DcMotorEx.class, "armright");
         leftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -67,6 +72,9 @@ public class ArmTest extends LinearOpMode {
 
             leftMotor.setPower(leftPower);
             rightMotor.setPower(rightPower);
+
+            slides.setTarget(slidesTarget);
+            slides.update(telemetry);
 
             telemetry.addData("target", Math.toDegrees(targetAngle));
             telemetry.addData("left cur", leftEnc);
