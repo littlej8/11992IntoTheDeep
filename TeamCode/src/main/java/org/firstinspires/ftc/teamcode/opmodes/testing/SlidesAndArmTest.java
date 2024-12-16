@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.subsystems.actions.WaitAction;
 @Config
 @TeleOp
 public class SlidesAndArmTest extends LinearOpMode {
+    public static double armTarget = -55;
     public void runOpMode() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 

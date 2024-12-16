@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -9,9 +10,11 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystems.actions.Action;
 import org.firstinspires.ftc.teamcode.subsystems.actions.WaitAction;
+import org.firstinspires.ftc.teamcode.util.MotionProfile;
 import org.firstinspires.ftc.teamcode.util.PIDController;
 import org.opencv.core.Mat;
 
+@Config
 public class Arm implements Subsystem {
     DcMotorEx leftMotor, rightMotor;
     public static double Kp = 1.0;
@@ -23,10 +26,12 @@ public class Arm implements Subsystem {
     double left = -50, right = -50;
     double degPerTick = 360.0 / 1497.325;
     public static double start_angle = -50;
-    double target = 0;
-    double profileTarget = 0, lastTarget = 0, lastUpdate = System.currentTimeMillis();
-    public static double DEG_PER_SEC = 45;
+    double target = -50;
+    double profileTarget = -50, lastUpdate = System.currentTimeMillis();
+    public static double DEG_PER_SEC = 90;
     public static double ANGLE_FINISH_DIST = 10;
+
+    public static boolean USE_MOTION_PROFILE = true;
 
     Telemetry telemetry = null;
 
@@ -76,8 +81,6 @@ public class Arm implements Subsystem {
     }
 
     public void setTarget(double deg) {
-        lastUpdate = System.currentTimeMillis();
-        lastTarget = target;
         target = deg;
     }
 
@@ -92,13 +95,18 @@ public class Arm implements Subsystem {
     public Action goToAction(double deg) {
         return new Action() {
             boolean init = false;
+            MotionProfile profile;
             @Override
             public boolean run(Telemetry telemetry) {
                 if (!init) {
                     setTarget(deg);
                     init = true;
+                    profile = new MotionProfile(getArmPosition(), deg, 90, 90);
                 }
 
+                if (USE_MOTION_PROFILE) {
+                    setTarget(profile.update());
+                }
                 update(telemetry);
 
                 return !atPosition();
@@ -138,10 +146,15 @@ public class Arm implements Subsystem {
 
     @Override
     public void update(Telemetry tel) {
-        double timeSinceStart = (System.currentTimeMillis() - lastUpdate) / 1000.0;
-        double totalMoveTime = Math.abs(target - lastTarget) / DEG_PER_SEC;
-        double progress = timeSinceStart / totalMoveTime;
-        profileTarget = lastTarget + ((target - lastTarget) * progress);
+        double angleDiff = Math.toRadians(target) - getArmPosition();
+
+        if (!USE_MOTION_PROFILE) {
+            double maxStep = DEG_PER_SEC * ((System.currentTimeMillis() - lastUpdate) / 1000);
+
+            profileTarget += Math.min(maxStep, Math.abs(angleDiff)) * Math.signum(angleDiff);
+
+            lastUpdate = System.currentTimeMillis();
+        }
 
         leftController.setPID(Kp, Ki, Kd);
         rightController.setPID(Kp, Ki, Kd);
@@ -160,6 +173,7 @@ public class Arm implements Subsystem {
         rightMotor.setPower(rightPower);
 
         if (tel != null) {
+            telemetry.addData("angle diff", Math.toDegrees(angleDiff));
             telemetry.addData("target", Math.toDegrees(targetAngle));
             telemetry.addData("left cur", leftEnc);
             telemetry.addData("right cur", rightEnc);
