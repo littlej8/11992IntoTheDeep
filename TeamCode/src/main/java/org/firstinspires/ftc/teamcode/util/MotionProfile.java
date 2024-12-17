@@ -14,6 +14,9 @@ public class MotionProfile {
     // initialize the points that decide accelerations
     // all units are in PER SECOND
     public MotionProfile(double start, double end, double maxVel, double maxAccel) {
+        this.start = start;
+        this.end = end;
+
         if (start == end) {
             return;
         }
@@ -52,8 +55,6 @@ public class MotionProfile {
         timer = new ElapsedTime();
         timer.reset();
 
-        this.start = start;
-        this.end = end;
         this.maxVel = maxVel;
         this.maxAccel = maxAccel;
     }
@@ -98,6 +99,10 @@ public class MotionProfile {
 
     public double getTime() {
         return (timer != null) ? timer.seconds() : 0;
+    }
+
+    public double getTotalTime() {
+        return totalTime;
     }
 
     public boolean finished() {

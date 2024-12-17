@@ -32,6 +32,10 @@ public class MotionProfile2d {
         return Math.max(x.getTime(), y.getTime());
     }
 
+    public double getTotalTime() {
+        return Math.max(x.getTotalTime(), y.getTotalTime());
+    }
+
     public boolean finished() {
         return x.finished() && y.finished();
     }

@@ -19,24 +19,25 @@ public class SampleAutoBlue extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         robot = new Robot(hardwareMap, telemetry, new Pose2d(32, 64, Math.toRadians(180)), true);
+        robot.dt.setDriveRelativeToStart(false);
 
         robot.schedule(
-                robot.moveAndAction(32, 16, -45, robot.highBasketAction()),
+                robot.moveAndAction(58, 52, -45, robot.highBasketAction()),
                 new UntilAction(robot.dropSampleAction(), robot.maintainPositionAction()),
-                robot.moveAndAction(24, 32, 180, robot.lowerArmAction()),
+                robot.moveAndAction(56, 38, 180, robot.lowerArmAction()),
                 new UntilAction(robot.grabSampleAction(), robot.maintainPositionAction()),
-                robot.moveAndAction(32, 16, -45, robot.highBasketAction()),
+                robot.moveAndAction(58, 52, -45, robot.highBasketAction()),
                 new UntilAction(robot.dropSampleAction(), robot.maintainPositionAction()),
-                robot.moveAndAction(32, 32, 180, robot.lowerArmAction()),
+                robot.moveAndAction(64, 38, 180, robot.lowerArmAction()),
                 new UntilAction(robot.grabSampleAction(), robot.maintainPositionAction()),
-                robot.moveAndAction(32, 16, -45, robot.highBasketAction()),
+                robot.moveAndAction(58, 52, -45, robot.highBasketAction()),
                 new UntilAction(robot.dropSampleAction(), robot.maintainPositionAction()),
-                robot.moveAndAction(32, 32, -135, robot.lowerArmAction()),
+                robot.moveAndAction(64, 38, -135, robot.lowerArmAction()),
                 new UntilAction(robot.grabSampleAction(), robot.maintainPositionAction()),
-                robot.moveAndAction(32, 16, -45, robot.highBasketAction()),
+                robot.moveAndAction(58, 52, -45, robot.highBasketAction()),
                 new UntilAction(robot.dropSampleAction(), robot.maintainPositionAction()),
-                robot.moveAndAction(24, 64, 90, robot.highBarAction()),
-                robot.moveAndAction(-6, 64, 90, robot.highBarAction())
+                robot.moveAndAction(56, 0, 90, robot.highBarAction()),
+                robot.moveAndAction(24, 0, 90, robot.highBarAction())
         );
 
         waitForStart();

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Rotation2d;
@@ -15,8 +16,11 @@ import org.firstinspires.ftc.teamcode.subsystems.actions.ActionSequence;
 import org.firstinspires.ftc.teamcode.subsystems.actions.UntilAction;
 import org.firstinspires.ftc.teamcode.subsystems.actions.WaitAction;
 import org.firstinspires.ftc.teamcode.subsystems.vision.VisionLocalizer;
+import org.firstinspires.ftc.teamcode.util.Lerp;
+import org.firstinspires.ftc.teamcode.util.MotionProfile2d;
 import org.firstinspires.ftc.teamcode.util.NullTelemetry;
 
+@Config
 public class Robot implements Subsystem {
     ActionScheduler scheduler = new ActionScheduler();
     Telemetry telemetry;
@@ -25,6 +29,9 @@ public class Robot implements Subsystem {
     public Claw claw;
     public Arm arm;
     public Slides slides;
+
+    public static boolean USE_MOTION_PROFILE = true;
+    public static double MAX_VEL = 72, MAX_ACCEL = 90;
 
     public Robot(HardwareMap hw, Telemetry telemetry, Pose2d startPose) {
         this.telemetry = telemetry;
@@ -105,7 +112,10 @@ public class Robot implements Subsystem {
         return new Action() {
             boolean init = false;
             final double prevPower = Drivetrain.MAX_WHEEL_POWER;
+            MotionProfile2d profile;
             Vector2d initialPose;
+            boolean onlyX = false;
+            boolean onlyY = false;
 
             @Override
             public boolean run(Telemetry telemetry) {
@@ -113,10 +123,28 @@ public class Robot implements Subsystem {
                     initialPose = new Vector2d(dt.getX(), dt.getY());
                     Drivetrain.MAX_WHEEL_POWER = speed;
                     dt.setTargetPose(new Pose2d(x, y, Math.toRadians(h)));
+                    profile = new MotionProfile2d(new Vector2d(dt.getX(), dt.getY()), new Vector2d(x, y), MAX_VEL, MAX_ACCEL);
                     init = true;
+                    if (Math.abs(dt.getX() - x) < 0.05) {
+                        onlyX = true;
+                    }
+                    if (Math.abs(dt.getY() - y) < 0.05) {
+                        onlyY = true;
+                    }
                 }
 
-                if (dt.moveFinished()) {
+                Vector2d update = profile.update();
+                if (USE_MOTION_PROFILE) {
+                    if (onlyX) {
+                        dt.setTargetPose(new Pose2d(x, profile.update().y, Math.toRadians(h)));
+                    } else if (onlyY) {
+                        dt.setTargetPose(new Pose2d(profile.update().x, y, Math.toRadians(h)));
+                    } else {
+                        dt.setTargetPose(new Pose2d(profile.update(), Math.toRadians(h)));
+                    }
+                }
+
+                if (profile.finished() && dt.moveFinished()) {
                     Drivetrain.MAX_WHEEL_POWER = prevPower;
                     dt.killPowers();
                     return false;
@@ -133,6 +161,10 @@ public class Robot implements Subsystem {
                 c.strokeLine(initialPose.x, initialPose.y, x, y);
 
                 drawRobot(c);
+
+                c.setStroke("#FF0000");
+                c.setStrokeWidth(1);
+                c.strokeCircle(update.x, update.y, 9);
 
                 FtcDashboard.getInstance().sendTelemetryPacket(p);
 
@@ -160,6 +192,21 @@ public class Robot implements Subsystem {
 
     public Action moveAction(double x, double y, double h) {
         return moveAction(x, y, h, Drivetrain.MAX_WHEEL_POWER);
+    }
+
+    public Action turnToAction(double h) {
+        return telemetry -> {
+            dt.setTargetPose(new Pose2d(dt.getX(), dt.getY(), Math.toRadians(h)));
+            dt.updatePose(telemetry);
+            dt.updateMovement(telemetry);
+
+            if (Math.abs(h - Math.toDegrees(dt.getHeading())) < 15) {
+                dt.killPowers();
+                return false;
+            }
+
+            return true;
+        };
     }
 
     public Action moveAndAction(double x, double y, double h, Action action) {

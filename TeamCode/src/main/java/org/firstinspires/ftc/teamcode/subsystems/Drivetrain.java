@@ -34,9 +34,11 @@ public class Drivetrain implements Subsystem {
 
     Telemetry tel = null;
 
-    public static double xP = 0.0125, xI = 0.0, xD = 0.005;
-    public static double yP = 0.0125, yI = 0.0, yD = 0.005;
-    public static double hP = 3, hI = 0, hD = 0.005;
+    public static double xP = 0.2, xI = 0.0, xD = 0;
+    public static double yP = 0.2, yI = 0.0, yD = 0;
+    public static double hP = 0.7, hI = 0, hD = 0;
+
+    public static double HEADING_POWER_MULT = 0.75;
     PIDController xPID = new PIDController(xP, xI, xD),
             yPID = new PIDController(yP, yI, yD),
             hPID = new PIDController(hP, hI, hD, true);
@@ -48,7 +50,7 @@ public class Drivetrain implements Subsystem {
 
     public static double FORWARD_GAIN = 1.063594;
     public static double STRAFE_GAIN = 1.268493;
-    public static double MAX_WHEEL_POWER = 0.5;
+    public static double MAX_WHEEL_POWER = 1.0;
     public static double MAX_ADJUSTMENT_POWER = 0.3;
 
     public static double LINEAR_FINISH_DIST = 1.0;
@@ -218,7 +220,7 @@ public class Drivetrain implements Subsystem {
 
         Twist2d twist = new Twist2d(
                 new Vector2d(
-                        -(xrot * curCos - yrot * curSin), // TODO: MAYBE MAKE POSITIVE
+                        (xrot * curCos - yrot * curSin), // TODO: MAYBE MAKE POSITIVE
                         -(xrot * curSin + yrot * curCos)),
                 dtheta);
         pose = new Pose2d(pose.position.x + twist.line.x, pose.position.y + twist.line.y, heading);
@@ -258,6 +260,8 @@ public class Drivetrain implements Subsystem {
     }
 
     public double[] setDrivePowers(double x, double y, double h) {
+        h *= HEADING_POWER_MULT;
+
         double pfl = x + y - h;
         double pfr = -x + y + h;
         double pbl = -x + y - h;
@@ -318,7 +322,7 @@ public class Drivetrain implements Subsystem {
         yPID.setPID(yP, yI, yD);
         hPID.setPID(hP, hI, hD);
 
-        double xPower = xPID.update(pose.position.x, targetPose.position.x); //TODO: MAYBE MAKE NEGATIVE
+        double xPower = -xPID.update(pose.position.x, targetPose.position.x); //TODO: MAYBE MAKE NEGATIVE
         double yPower = -yPID.update(pose.position.y, targetPose.position.y);
         double hPower = hPID.update(pose.heading.toDouble(), targetPose.heading.toDouble());
 
