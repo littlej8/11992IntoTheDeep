@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+// https://www.desmos.com/calculator/ikrzkv1apo
+
 public class CurveMotionProfile {
     Vector2d[] points;
     double maxVel, maxAccel;
