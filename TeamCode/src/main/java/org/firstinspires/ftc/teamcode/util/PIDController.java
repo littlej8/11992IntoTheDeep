@@ -52,6 +52,10 @@ public class PIDController {
         }
 
         sumError += error * timePassed;
+        /* TODO: Test if integral capping works
+        if (Math.abs(sumError) > 100) {
+            sumError = 100 * Math.signum(sumError);
+        }*/
         double d = (error - prevError) / timePassed;
 
         return (error * Kp) + (sumError * Ki) + (d * Kd);

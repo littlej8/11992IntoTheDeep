@@ -21,7 +21,7 @@ import org.firstinspires.ftc.teamcode.util.PoseSingleton;
 @Autonomous(name = "Specimen Auto Blue", preselectTeleOp = "MainTeleOp")
 public class SpecimenAutoBlue extends LinearOpMode {
     public static boolean USE_VISION_LOCALIZATION = false;
-    public static double MAX_SPEED = 1.0;
+    public static double MAX_SPEED = 0.8;
 
     Robot robot;
 
@@ -43,13 +43,13 @@ public class SpecimenAutoBlue extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        robot = new Robot(hardwareMap, telemetry, new Pose2d(-8, 64, Math.toRadians(180)), true);
+        robot = new Robot(hardwareMap, telemetry, new Pose2d(-8, 64, Math.toRadians(180)), 69);
         robot.dt.setDriveRelativeToStart(false);
         double prevMaxWheelPower = Drivetrain.MAX_WHEEL_POWER;
         Drivetrain.MAX_WHEEL_POWER = MAX_SPEED;
 
         robot.schedule(
-                robot.moveAndAction(-8, 32, 180, robot.highBarAction()),
+                robot.moveAndAction(-8, 40, 180, robot.highBarAction()),
                 new UntilAction(robot.hookSpecimenAction(), robot.maintainPositionAction()),
                 robot.moveAndAction(-40, 46, 180, robot.lowerArmAction()),
                 robot.moveAction(-40, 4, 180),

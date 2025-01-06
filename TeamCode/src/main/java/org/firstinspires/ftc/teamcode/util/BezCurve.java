@@ -2,18 +2,22 @@ package org.firstinspires.ftc.teamcode.util;
 
 import java.util.List;
 import java.util.ArrayList;
+
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-// https://www.desmos.com/calculator/ikrzkv1apo
+// https://www.desmos.com/calculator/wbvbroge6x
 
-public class CurveMotionProfile {
+public class BezCurve {
     Vector2d[] points;
     double maxVel, maxAccel;
     double totalTime;
     ElapsedTime timer;
 
-    public CurveMotionProfile(Vector2d[] points, double maxVel, double maxAccel) {
+    public BezCurve(Vector2d[] points, double maxVel, double maxAccel) {
         this.points = points;
         this.maxVel = maxVel;
         this.maxAccel = maxAccel;
@@ -23,12 +27,27 @@ public class CurveMotionProfile {
         timer.reset();
     }
 
-    public CurveMotionProfile(Vector2d p0, Vector2d p1, Vector2d p2, Vector2d p3, double maxVel, double maxAccel) {
+    public BezCurve(Vector2d p0, Vector2d p1, Vector2d p2, Vector2d p3, double maxVel, double maxAccel) {
         this(new Vector2d[]{p0, p1, p2, p3}, maxVel, maxAccel);
     }
 
     public double getTotalTime() {
         return totalTime;
+    }
+
+    public boolean finished() {
+        return timer.seconds() >= totalTime;
+    }
+
+    public void draw(Canvas c) {
+        c.setStroke("#4CAF50FF");
+        c.setStrokeWidth(1);
+
+        for (int i = 1; i < 100; i++) {
+            Vector2d prev = getPoint((i-1) / 100.0);
+            Vector2d cur = getPoint(i / 100.0);
+            c.strokeLine(prev.x, prev.y, cur.x, cur.y);
+        }
     }
 
     public Vector2d update() {

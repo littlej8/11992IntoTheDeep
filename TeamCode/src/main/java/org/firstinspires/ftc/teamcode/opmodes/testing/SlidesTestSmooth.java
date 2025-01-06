@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Slides;
 public class SlidesTestSmooth extends LinearOpMode {
     public static double pos = 0;
     public static double min = 0;
-    public static double max = 28;
+    public static double max = 25;
     public static double speed = 10;
     @Override
     public void runOpMode() {

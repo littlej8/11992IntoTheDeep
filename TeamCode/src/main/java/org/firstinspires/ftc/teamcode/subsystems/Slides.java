@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -13,7 +14,7 @@ import org.firstinspires.ftc.teamcode.util.PIDController;
 @Config
 public class Slides implements Subsystem {
     DcMotorEx slideMotor;
-    public static double Kp = 0.5;
+    public static double Kp = 1.0;
     public static double Ki = 0.0;
     public static double Kd = 0.0;
     public static double Kf = 0.1;
@@ -134,7 +135,7 @@ public class Slides implements Subsystem {
 
         double slideHeight = slideEnc * inPerTick;
 
-        double slidePower = slideController.update(slideHeight, target) + Kf;
+        double slidePower = slideController.update(slideHeight, target);
 
         slideMotor.setPower(slidePower);
 

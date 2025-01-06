@@ -31,7 +31,7 @@ public class Robot implements Subsystem {
     public Slides slides;
 
     public static boolean USE_MOTION_PROFILE = true;
-    public static double MAX_VEL = 72, MAX_ACCEL = 90;
+    public static double MAX_VEL = 48, MAX_ACCEL = 60;
 
     public Robot(HardwareMap hw, Telemetry telemetry, Pose2d startPose) {
         this.telemetry = telemetry;
@@ -60,6 +60,14 @@ public class Robot implements Subsystem {
             slides = new Slides(hw, telemetry);
             claw = new Claw(hw);
         }
+    }
+
+    public Robot(HardwareMap hw, Telemetry telemetry, Pose2d startPose, int throwaway) {
+        this.telemetry = telemetry;
+        dt = new Drivetrain(hw, telemetry, startPose);
+        vision = new VisionLocalizer(hw);
+        arm = new Arm(hw, telemetry);
+        slides = new Slides(hw, telemetry);
     }
 
     public void schedule(Action... actions) {
@@ -280,7 +288,7 @@ public class Robot implements Subsystem {
 
     public Action grabSpecimenAction() {
         if (claw == null) {
-            return new WaitAction(2000);
+            return new WaitAction(500);
         }
 
         return claw.gripAction();
@@ -303,14 +311,15 @@ public class Robot implements Subsystem {
     }
 
     public Action hookSpecimenAction() {
-        if (arm == null || claw == null) {
-            return new WaitAction(2000);
+        if (arm == null) {
+            return new WaitAction(1000);
         }
 
-        return new ActionSequence(
+        return armAction(0);
+        /*return new ActionSequence(
             arm.goToAction(arm.getArmPosition() - 5),
             claw.dropAction()
-        );
+        );*/
     }
 
     public Action grabSampleAction() {

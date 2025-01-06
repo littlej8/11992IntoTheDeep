@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.Twist2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.hardware.lynx.LynxModule;
@@ -36,9 +38,9 @@ public class Drivetrain implements Subsystem {
 
     public static double xP = 0.2, xI = 0.0, xD = 0;
     public static double yP = 0.2, yI = 0.0, yD = 0;
-    public static double hP = 0.7, hI = 0, hD = 0;
+    public static double hP = 1.0, hI = 0, hD = 0;
 
-    public static double HEADING_POWER_MULT = 0.75;
+    public static double HEADING_POWER_MULT = 1.0;
     PIDController xPID = new PIDController(xP, xI, xD),
             yPID = new PIDController(yP, yI, yD),
             hPID = new PIDController(hP, hI, hD, true);
@@ -122,6 +124,17 @@ public class Drivetrain implements Subsystem {
     public Drivetrain(HardwareMap hw, Telemetry t, Pose2d start) {
         this(hw, start);
         tel = t;
+    }
+
+    public void draw(Canvas c) {
+        c.setStroke("#3F51B5");
+        c.setStrokeWidth(1);
+        c.strokeCircle(getX(), getY(), 9);
+
+        Vector2d halfv = Rotation2d.fromDouble(getHeading() + Math.PI/2).vec().times(0.5 * 9);
+        Vector2d p1 = new Vector2d(getX(), getY()).plus(halfv);
+        Vector2d p2 = p1.plus(halfv);
+        c.strokeLine(p1.x, p1.y, p2.x, p2.y);
     }
 
     public void setDriveRelativeToStart(boolean driveRelativeToStart) {

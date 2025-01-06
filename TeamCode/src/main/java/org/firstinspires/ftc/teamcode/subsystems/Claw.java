@@ -8,8 +8,8 @@ import org.firstinspires.ftc.teamcode.subsystems.actions.Action;
 import org.firstinspires.ftc.teamcode.subsystems.actions.WaitAction;
 
 public class Claw implements Subsystem {
-    //Servo rotLeft, rotRight;
-    Servo wrist;
+    Servo wristRot;
+    Servo wristInc;
     Servo grip;
 
     double powerPerDeg = 1.0 / 180.0;
@@ -18,21 +18,17 @@ public class Claw implements Subsystem {
     public static double gripMillis = 250;
 
     public Claw(HardwareMap hwMap) {
-        //rotLeft = hwMap.get(Servo.class, "rotLeft");
-        //rotRight = hwMap.get(Servo.class, "rotRight");
-        wrist = hwMap.get(Servo.class, "wrist");
+        wristRot = hwMap.get(Servo.class, "wristRot");
+        wristInc = hwMap.get(Servo.class, "wristInc");
         grip = hwMap.get(Servo.class, "grip");
-
-        //rotLeft.setDirection(Servo.Direction.REVERSE);
     }
 
-    /*public void rotate(int deg) {
-        rotLeft.setPosition(deg * powerPerDeg);
-        rotRight.setPosition(deg * powerPerDeg);
-    }*/
-
     public void rotate(int deg) {
-        wrist.setPosition(deg * powerPerDeg);
+        wristRot.setPosition(deg * powerPerDeg);
+    }
+
+    public void inc(int deg) {
+        wristInc.setPosition(deg * powerPerDeg);
     }
 
     public void grip() {
