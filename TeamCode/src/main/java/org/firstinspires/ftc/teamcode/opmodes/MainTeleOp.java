@@ -26,6 +26,7 @@ import org.firstinspires.ftc.teamcode.util.PoseSingleton;
       - circle again while in this state to grab from sub
         - while in this mode dpad up/down makes ik target move vertically
         - also left stick forward/backward moves ik target forward/backward
+        - also dpad left/right to rotate claw to match samples
     - square to hook spec
     - triangle to drop in basket
  */
@@ -178,6 +179,14 @@ public class MainTeleOp extends LinearOpMode {
 
                 if (gamepad2.dpad_down) {
                     arm_ik_target_y -= 6 * dt;
+                }
+
+                if (gamepad2.dpad_left) {
+                    claw_rot -= 90 * dt;
+                }
+
+                if (gamepad2.dpad_right) {
+                    claw_rot += 90 * dt;
                 }
             } else {
                 if (gamepad2.dpad_up) {
