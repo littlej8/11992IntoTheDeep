@@ -15,10 +15,10 @@ import org.firstinspires.ftc.teamcode.util.PIDController;
 @Config
 public class Arm implements Subsystem {
     DcMotorEx motor;
-    public static double Kp = 2.5;
+    public static double Kp = 5.0;
     public static double Ki = 0.003;
-    public static double Kd = 0.0;//0.4;
-    public static double Kf = 0.4;//0.35;
+    public static double Kd = 0.001;//0.4;
+    public static double Kf = 0.2;//0.35;
     PIDController controller = new PIDController(0, 0, 0);
     double currentAngle = -40;
     double degPerTick = 360.0 / (1497.325 * 2.5);
@@ -180,7 +180,6 @@ public class Arm implements Subsystem {
             telemetry.addData("target", Math.toDegrees(targetAngle));
             telemetry.addData("angle", Math.toDegrees(angle));
             telemetry.addData("power", power);
-            telemetry.update();
         }
 
         currentAngle = angle;

@@ -13,7 +13,8 @@ public class Claw implements Subsystem {
     Servo wristBend;
     Servo grip;
 
-    double powerPerDeg = 1.0 / 180.0;
+    double powerPerDegRot = 1.0 / 180.0;
+    double powerPerDegBend = 1.0 / 270.0;
 
     public static double millisPerDeg = 5;
     public static double gripMillis = 250;
@@ -25,18 +26,18 @@ public class Claw implements Subsystem {
     }
 
     public void rotate(double deg) {
-        wristRot.setPosition(deg * powerPerDeg);
+        wristRot.setPosition(deg * powerPerDegRot);
     }
 
     public void bend(double deg) {
-        wristBend.setPosition(deg * powerPerDeg);
-    }
-
-    public void grip() {
-        grip.setPosition(1);
+        wristBend.setPosition(deg * powerPerDegBend);
     }
 
     public void drop() {
+        grip.setPosition(1);
+    }
+
+    public void grip() {
         grip.setPosition(0);
     }
 
@@ -53,7 +54,7 @@ public class Claw implements Subsystem {
     public Action gripAction() {
         return new ActionSequence(
                 telemetry -> {
-                    grip();
+                    drop();
                     return false;
                 },
                 new WaitAction(gripMillis)
@@ -63,7 +64,7 @@ public class Claw implements Subsystem {
     public Action dropAction() {
         return new ActionSequence(
                 telemetry -> {
-                    drop();
+                    grip();
                     return false;
                 },
                 new WaitAction(gripMillis)

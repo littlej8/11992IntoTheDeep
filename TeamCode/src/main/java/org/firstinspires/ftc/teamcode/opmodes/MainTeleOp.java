@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.util.PoseSingleton;
     - left/right trigger strafe left/right
 
     Driver 2:
-    - left/right trigger to grip/drop claw
+    - right/left trigger to grip/drop claw
     - dpad up/down to adjust arm for the current state
     - cross to retract arm
     - circle to grab spec from wall
@@ -42,8 +42,8 @@ public class MainTeleOp extends LinearOpMode {
         switching_states = true;
     }
 
-    public static double turnSpeed = 0.75;
-    public static double linearSpeed = 1.0;
+    public static double turnSpeed = 0.5;
+    public static double linearSpeed = 0.75;
     public static double arm_target = -40;
     public static double slides_target = 0;
     public static double claw_rot = 0;
@@ -81,10 +81,10 @@ public class MainTeleOp extends LinearOpMode {
             // DRIVE
             double x = 0;
             if (gamepad1.left_trigger > 0.2) {
-                x += gamepad1.left_trigger;
+                x += gamepad1.left_trigger / 2;
             }
             if (gamepad1.right_trigger > 0.2) {
-                x -= gamepad1.right_trigger;
+                x -= gamepad1.right_trigger / 2;
             }
             double y = gamepad1.left_stick_y;
             double turn = Math.pow(-gamepad1.right_stick_x, 3) * turnSpeed;
@@ -92,11 +92,11 @@ public class MainTeleOp extends LinearOpMode {
             robot.updateWithVision(telemetry);
 
             if (gamepad2.right_trigger > 0.1) {
-                robot.claw.drop();
+                robot.claw.grip();
             }
 
             if (gamepad2.left_trigger > 0.1) {
-                robot.claw.grip();
+                robot.claw.drop();
             }
 
             if (gamepad2.cross && !prevGamepad2.cross) {
@@ -108,7 +108,7 @@ public class MainTeleOp extends LinearOpMode {
             }
 
             if (gamepad2.circle && !prevGamepad2.circle && arm_state.equals("grabbing_wall")) {
-                setState("grabbing_sub");
+                //setState("grabbing_sub");
             }
 
             if (gamepad2.square && !prevGamepad2.square) {
@@ -123,37 +123,39 @@ public class MainTeleOp extends LinearOpMode {
                 switching_states = false;
                 switch (arm_state) {
                     case "retracted": {
-                        arm_target = -40;
+                        arm_target = -35;
                         slides_target = 0;
                         claw_bend = 0;
                         claw_rot = 0;
                         break;
                     }
                     case "grabbing_wall": {
-                        arm_target = -20;
+                        arm_target = -17;
                         slides_target = 0;
-                        claw_bend = 140;
-                        claw_rot = 0;
+                        claw_bend = 240;
+                        claw_rot = 90;
+                        robot.claw.drop();
                         break;
                     }
                     case "grabbing_sub": {
-                        claw_rot = 0;
+                        claw_rot = 90;
                         arm_ik_target_x = 0;
                         arm_ik_target_y = 6;
+                        robot.claw.drop();
                         break;
                     }
                     case "hooking": {
-                        arm_target = 5;
+                        arm_target = 19;
                         slides_target = 0;
-                        claw_bend = 180;
-                        claw_rot = 0;
+                        claw_bend = 270;
+                        claw_rot = 90;
                         break;
                     }
                     case "basket": {
                         arm_target = 90;
                         slides_target = 25;
-                        claw_bend = 180;
-                        claw_rot = 0;
+                        claw_bend = 270;
+                        claw_rot = 90;
                         break;
                     }
                     default: {
@@ -213,12 +215,12 @@ public class MainTeleOp extends LinearOpMode {
                 claw_bend = 0;
             }
 
-            if (claw_bend > 180) {
-                claw_bend = 180;
+            if (claw_bend > 270) {
+                claw_bend = 270;
             }
 
             robot.arm.update(telemetry);
-            robot.slides.update(telemetry);
+            //robot.slides.update(telemetry);
 
             // dont break claw while arm is retracted :(
             if (arm_target > -35) {
@@ -229,8 +231,7 @@ public class MainTeleOp extends LinearOpMode {
             //telemetry.addData("slides current", robot.slides.);
             //telemetry.addData("left stick", "%.2f, %.2f", gamepad1.left_stick_x, gamepad1.left_stick_y);
             //telemetry.addData("right stick", "%.2f, %.2f", gamepad1.right_stick_x, gamepad1.right_stick_y);
-            telemetry.addData("triangle", gamepad2.triangle);
-            telemetry.addData("prev triangle", prevGamepad2.triangle);
+            telemetry.addData("robot state", arm_state);
             telemetry.update();
 
             prevGamepad1.copy(gamepad1);

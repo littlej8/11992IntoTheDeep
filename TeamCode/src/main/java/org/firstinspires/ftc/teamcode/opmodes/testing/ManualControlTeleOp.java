@@ -15,8 +15,8 @@ import org.firstinspires.ftc.teamcode.util.PoseSingleton;
 @Config
 @TeleOp(name="ManualControlTeleOp", group="TeleOp")
 public class ManualControlTeleOp extends LinearOpMode {
-    public static double turnSpeed = 0.75;
-    public static double linearSpeed = 1.0;
+    public static double turnSpeed = 0.5;
+    public static double linearSpeed = 0.75;
     public static double arm_target = -40;
     public static double slides_target = 0;
     public static double claw_rot = 0;
@@ -28,7 +28,6 @@ public class ManualControlTeleOp extends LinearOpMode {
 
         Robot robot = new Robot(hardwareMap, telemetry, PoseSingleton.getInstance().getPose());
         robot.slides.setTarget(0);
-        Drivetrain.MAX_WHEEL_POWER = 0.75;
 
         Gamepad prevGamepad1 = new Gamepad();
         Gamepad prevGamepad2 = new Gamepad();
@@ -54,10 +53,10 @@ public class ManualControlTeleOp extends LinearOpMode {
             if (gamepad1.right_trigger > 0.2) {
                 x -= gamepad1.right_trigger;
             }
-            double y = gamepad1.left_stick_y;
+            double y = gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y);
             double turn = Math.pow(-gamepad1.right_stick_x, 3) * turnSpeed;
             robot.dt.setDrivePowers(x, y, turn);
-            robot.updateWithVision(telemetry);
+            robot.update();
 
             // ARM
             if (gamepad2.triangle || gamepad2.y) {
@@ -79,11 +78,11 @@ public class ManualControlTeleOp extends LinearOpMode {
 
             // CLAW
             if (gamepad2.right_trigger > 0.1) {
-                robot.claw.drop();
+                robot.claw.grip();
             }
 
             if (gamepad2.left_trigger > 0.1) {
-                robot.claw.grip();
+                robot.claw.drop();
             }
 
             if (gamepad2.dpad_right) {
@@ -95,11 +94,11 @@ public class ManualControlTeleOp extends LinearOpMode {
             }
 
             if (gamepad2.dpad_up) {
-                claw_bend += 180 * dt;
+                claw_bend += 270 * dt;
             }
 
             if (gamepad2.dpad_down) {
-                claw_bend -= 180 * dt;
+                claw_bend -= 270 * dt;
             }
 
             robot.arm.setTarget(arm_target);
@@ -120,8 +119,8 @@ public class ManualControlTeleOp extends LinearOpMode {
                 claw_bend = 0;
             }
 
-            if (claw_bend > 180) {
-                claw_bend = 180;
+            if (claw_bend > 270) {
+                claw_bend = 270;
             }
 
             robot.arm.update(telemetry);
@@ -133,11 +132,10 @@ public class ManualControlTeleOp extends LinearOpMode {
                 robot.claw.bend(claw_bend);
             }
 
-            //telemetry.addData("slides current", robot.slides.);
-            //telemetry.addData("left stick", "%.2f, %.2f", gamepad1.left_stick_x, gamepad1.left_stick_y);
-            //telemetry.addData("right stick", "%.2f, %.2f", gamepad1.right_stick_x, gamepad1.right_stick_y);
-            telemetry.addData("triangle", gamepad2.triangle);
-            telemetry.addData("prev triangle", prevGamepad2.triangle);
+            telemetry.addData("arm target", arm_target);
+            telemetry.addData("slides target", slides_target);
+            telemetry.addData("claw rot", claw_rot);
+            telemetry.addData("claw bend", claw_bend);
             telemetry.update();
         }
     }

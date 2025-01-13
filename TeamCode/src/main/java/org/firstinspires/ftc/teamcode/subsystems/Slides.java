@@ -135,7 +135,7 @@ public class Slides implements Subsystem {
 
         double slideHeight = slideEnc * inPerTick;
 
-        double slidePower = slideController.update(slideHeight, target);
+        double slidePower = slideController.update(slideHeight, target) + Kf * Math.signum(target - slideHeight);
 
         slideMotor.setPower(slidePower);
 
