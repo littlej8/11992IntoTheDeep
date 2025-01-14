@@ -16,7 +16,7 @@ public class Slides implements Subsystem {
     DcMotorEx slideMotor;
     public static double Kp = 1.0;
     public static double Ki = 0.0;
-    public static double Kd = 0.0;
+    public static double Kd = 0.001;
     public static double Kf = 0.1;
     public static PIDController slideController = new PIDController(0, 0, 0);
     double current = 0, target = 0;

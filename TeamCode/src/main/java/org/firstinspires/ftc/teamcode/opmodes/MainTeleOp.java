@@ -103,12 +103,12 @@ public class MainTeleOp extends LinearOpMode {
                 setState("retracted");
             }
 
-            if (gamepad2.circle && !prevGamepad2.circle) {
-                setState("grabbing_wall");
+            if (gamepad2.circle && !prevGamepad2.circle && arm_state.equals("grabbing_wall")) {
+                setState("grabbing_sub");
             }
 
-            if (gamepad2.circle && !prevGamepad2.circle && arm_state.equals("grabbing_wall")) {
-                //setState("grabbing_sub");
+            if (gamepad2.circle && !prevGamepad2.circle) {
+                setState("grabbing_wall");
             }
 
             if (gamepad2.square && !prevGamepad2.square) {
@@ -140,7 +140,7 @@ public class MainTeleOp extends LinearOpMode {
                     case "grabbing_sub": {
                         claw_rot = 90;
                         arm_ik_target_x = 0;
-                        arm_ik_target_y = 6;
+                        arm_ik_target_y = 4;
                         robot.claw.drop();
                         break;
                     }

@@ -17,8 +17,8 @@ public class Arm implements Subsystem {
     DcMotorEx motor;
     public static double Kp = 5.0;
     public static double Ki = 0.003;
-    public static double Kd = 0.001;//0.4;
-    public static double Kf = 0.2;//0.35;
+    public static double Kd = 0.01;//0.4;
+    public static double Kf = 0.6;//0.35;
     PIDController controller = new PIDController(0, 0, 0);
     double currentAngle = -40;
     double degPerTick = 360.0 / (1497.325 * 2.5);

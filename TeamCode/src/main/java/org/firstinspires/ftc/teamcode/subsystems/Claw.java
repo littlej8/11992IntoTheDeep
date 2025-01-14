@@ -17,7 +17,7 @@ public class Claw implements Subsystem {
     double powerPerDegBend = 1.0 / 270.0;
 
     public static double millisPerDeg = 5;
-    public static double gripMillis = 250;
+    public static double gripMillis = 500;
 
     public Claw(HardwareMap hwMap) {
         wristRot = hwMap.get(Servo.class, "wrist_rot");
@@ -51,7 +51,17 @@ public class Claw implements Subsystem {
         );
     }
 
-    public Action gripAction() {
+    public Action bendAction(double deg) {
+        return new ActionSequence(
+                telemetry -> {
+                    bend(deg);
+                    return false;
+                },
+                new WaitAction(Math.abs(deg - wristBend.getPosition()) * millisPerDeg)
+        );
+    }
+
+    public Action dropAction() {
         return new ActionSequence(
                 telemetry -> {
                     drop();
@@ -61,7 +71,7 @@ public class Claw implements Subsystem {
         );
     }
 
-    public Action dropAction() {
+    public Action gripAction() {
         return new ActionSequence(
                 telemetry -> {
                     grip();

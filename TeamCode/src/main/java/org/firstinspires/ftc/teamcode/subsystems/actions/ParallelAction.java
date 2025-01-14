@@ -6,27 +6,27 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /*
-    Runs all actions and removes one once it is finished, stops when all actions are removed
+    Runs all actions and stop when last one is done
  */
 public class ParallelAction implements Action {
     ArrayList<Action> actions = new ArrayList<>();
+    ArrayList<Boolean> finished = new ArrayList<>();
 
     public ParallelAction(Action... actions) {
         this.actions.addAll(Arrays.asList(actions));
+        for (int i = 0; i < this.actions.size(); i++) {
+            finished.add(false);
+        }
     }
 
     @Override
     public boolean run(Telemetry telemetry) {
-        if (actions.isEmpty())
+        if (!finished.contains(false))
             return false;
 
-        ArrayList<Action> actionsStillRunning = new ArrayList<>();
-
         for (int i = 0; i < actions.size(); i++)
-            if (actions.get(i).run(telemetry))
-                actionsStillRunning.add(actions.get(i));
-
-        actions = actionsStillRunning;
+            if (!actions.get(i).run(telemetry) && !finished.get(i))
+                finished.set(i, true);
 
         return true;
     }

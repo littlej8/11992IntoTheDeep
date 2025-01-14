@@ -1,10 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.roadrunner.Pose2d;
-import com.google.blocks.ftcrobotcontroller.runtime.Block;
 
 import org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion;
-import org.firstinspires.ftc.robotcore.external.ExportClassToBlocks;
 import org.firstinspires.ftc.robotcore.external.ExportToBlocks;
 import org.firstinspires.ftc.teamcode.subsystems.Arm;
 import org.firstinspires.ftc.teamcode.subsystems.Drivetrain;
@@ -82,7 +80,7 @@ public class BlocksFunctions extends BlocksOpModeCompanion {
             parameterLabels = {"x", "y", "heading"}
     )
     public static void scheduleGrabSpecimen() {
-        robot.schedule(robot.grabSpecimenAction());
+        robot.schedule(robot.claw.gripAction());
     }
 
     @ExportToBlocks(
@@ -91,7 +89,7 @@ public class BlocksFunctions extends BlocksOpModeCompanion {
             parameterLabels = {"x", "y", "heading"}
     )
     public static void scheduleHookSpecimen() {
-        robot.schedule(robot.hookSpecimenAction());
+        robot.schedule(robot.claw.bendAction(210));
     }
 
     @ExportToBlocks(
@@ -100,7 +98,7 @@ public class BlocksFunctions extends BlocksOpModeCompanion {
             parameterLabels = {"x", "y", "heading", "speed"}
     )
     public static void scheduleMoveAndArmUp(double x, double y, double heading, double speed) {
-        robot.schedule(new UntilAction(robot.moveAction(x, y, heading, speed), robot.highBarAction()));
+        robot.schedule(new UntilAction(robot.moveAction(x, y, heading, speed), robot.prepareToHookAction()));
     }
 
     /*

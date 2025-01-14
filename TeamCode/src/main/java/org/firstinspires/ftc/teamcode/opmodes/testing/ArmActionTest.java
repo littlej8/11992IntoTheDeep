@@ -4,19 +4,14 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.Robot;
-import org.firstinspires.ftc.teamcode.subsystems.actions.Action;
-import org.firstinspires.ftc.teamcode.subsystems.actions.ActionSequence;
 import org.firstinspires.ftc.teamcode.subsystems.actions.MaintainSubsystemAction;
 import org.firstinspires.ftc.teamcode.subsystems.actions.UntilAction;
 import org.firstinspires.ftc.teamcode.subsystems.actions.WaitAction;
-import org.firstinspires.ftc.teamcode.util.PoseSingleton;
 
 @Config
 @Autonomous(name = "Arm Action Test", preselectTeleOp = "MainTeleOp")
@@ -29,9 +24,9 @@ public class ArmActionTest extends LinearOpMode {
         robot = new Robot(hardwareMap, telemetry, new Pose2d(-8, 64, Math.toRadians(180)), 69);
 
         robot.schedule(
-                robot.highBarAction(),
+                robot.prepareToHookAction(),
                 new UntilAction(new WaitAction(2000), new MaintainSubsystemAction(robot.arm)),
-                robot.hookSpecimenAction(),
+                robot.claw.bendAction(210),
                 new UntilAction(new WaitAction(2000), new MaintainSubsystemAction(robot.arm)),
                 robot.lowerArmAction()
         );
