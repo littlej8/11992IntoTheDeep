@@ -7,16 +7,20 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystems.actions.Action;
 import org.firstinspires.ftc.teamcode.subsystems.actions.ActionScheduler;
 import org.firstinspires.ftc.teamcode.subsystems.actions.ActionSequence;
+import org.firstinspires.ftc.teamcode.subsystems.actions.MaintainSubsystemAction;
 import org.firstinspires.ftc.teamcode.subsystems.actions.ParallelAction;
 import org.firstinspires.ftc.teamcode.subsystems.actions.UntilAction;
 import org.firstinspires.ftc.teamcode.subsystems.actions.WaitAction;
 import org.firstinspires.ftc.teamcode.subsystems.vision.VisionLocalizer;
+import org.firstinspires.ftc.teamcode.util.BezCurve;
 import org.firstinspires.ftc.teamcode.util.MotionProfile2d;
 import org.firstinspires.ftc.teamcode.util.NullTelemetry;
 
@@ -31,7 +35,7 @@ public class Robot implements Subsystem {
     public Slides slides;
 
     public static boolean USE_MOTION_PROFILE = true;
-    public static double MAX_VEL = 48, MAX_ACCEL = 60;
+    public static double MAX_VEL = 48, MAX_ACCEL = 48;
 
     public Robot(HardwareMap hw, Telemetry telemetry, Pose2d startPose) {
         this.telemetry = telemetry;
@@ -40,6 +44,9 @@ public class Robot implements Subsystem {
         arm = new Arm(hw, telemetry);
         slides = new Slides(hw, telemetry);
         claw = new Claw(hw);
+
+        /*hw.get(DcMotorEx.class, "hang1").setPower(0.07); //left
+        hw.get(DcMotorEx.class, "hang2").setPower(0.09); //right*/
     }
 
     public Robot(HardwareMap hw, Telemetry telemetry) {
@@ -202,6 +209,69 @@ public class Robot implements Subsystem {
         return moveAction(x, y, h, Drivetrain.MAX_WHEEL_POWER);
     }
 
+    public Action curveAction(Vector2d control1, Vector2d control2, Vector2d end, double heading) {
+        return new Action() {
+            boolean init = false;
+            BezCurve curve;
+
+            @Override
+            public boolean run(Telemetry telemetry) {
+                if (!init) {
+                    init = true;
+                    curve = new BezCurve(dt.getPose().position, control1, control2, end, 48, 60);
+                }
+
+                dt.setTargetPose(new Pose2d(curve.update(), Math.toRadians(heading)));
+                dt.updatePose(telemetry);
+                dt.updateMovement(telemetry);
+
+                TelemetryPacket p = new TelemetryPacket(true);
+                Canvas c = p.fieldOverlay();
+                curve.draw(c);
+                dt.draw(c);
+
+                FtcDashboard.getInstance().sendTelemetryPacket(p);
+
+                return !curve.finished();
+            }
+        };
+    }
+
+    public Action curveAction(double x, double y, double heading) {
+        return curveAction(x, y, heading, false);
+    }
+
+    public Action curveAction(double x, double y, double heading, boolean yFirst) {
+        return new Action() {
+            boolean init = false;
+            BezCurve curve;
+
+            @Override
+            public boolean run(Telemetry telemetry) {
+                if (!init) {
+                    init = true;
+                    curve = new BezCurve(dt.getPose().position, new Vector2d(x, y), 48, 60);
+                    if (yFirst) {
+                        curve.setYFirst();
+                    }
+                }
+
+                dt.setTargetPose(new Pose2d(curve.update(), Math.toRadians(heading)));
+                dt.updatePose(telemetry);
+                dt.updateMovement(telemetry);
+
+                TelemetryPacket p = new TelemetryPacket(true);
+                Canvas c = p.fieldOverlay();
+                curve.draw(c);
+                dt.draw(c);
+
+                FtcDashboard.getInstance().sendTelemetryPacket(p);
+
+                return !curve.finished();
+            }
+        };
+    }
+
     public Action turnToAction(double h) {
         return telemetry -> {
             dt.setTargetPose(new Pose2d(dt.getX(), dt.getY(), Math.toRadians(h)));
@@ -214,6 +284,35 @@ public class Robot implements Subsystem {
             }
 
             return true;
+        };
+    }
+
+    public Action turnToAction(double h, double millis) {
+        return new Action() {
+            boolean init = false;
+            ElapsedTime timer;
+            double start; //radians
+            @Override
+            public boolean run(Telemetry telemetry) {
+                if (!init) {
+                    init = true;
+                    timer = new ElapsedTime();
+                    start = Math.toDegrees(dt.getHeading());
+                }
+
+                double progress = timer.milliseconds() / millis;
+                double curTarget = start + (h - start) * progress;
+                dt.setTargetPose(new Pose2d(dt.getX(), dt.getY(), Math.toRadians(curTarget)));
+                dt.updatePose(telemetry);
+                dt.updateMovement(telemetry);
+
+                if (Math.abs(h - Math.toDegrees(dt.getHeading())) < 5) {
+                    dt.killPowers();
+                    return false;
+                }
+
+                return true;
+            }
         };
     }
 
@@ -272,27 +371,29 @@ public class Robot implements Subsystem {
 
     public Action lowerArmAction() {
         return new ParallelAction(
-                new ParallelAction(claw.rotateAction(0), claw.bendAction(0), claw.gripAction()),
+                new ParallelAction(claw.rotateAction(90), claw.bendAction(0), claw.gripAction()),
                 new ActionSequence(
                         new WaitAction(1000),
-                        telemetry -> {
-                            Arm.Kp = 1.0;
-                            Arm.MAX_POWER = 0.2;
-                            return false;
-                        },
-                        armAction(-25),
-                        telemetry -> {
-                            Arm.Kp = 5.0;
-                            Arm.MAX_POWER = 1.0;
-                            return false;
-                        }
+                        armAction(-30) // stop if takes longer than 3 secs
                 )
         );
     }
 
+    public Action retractFromBasketAction() {
+        Arm.MAX_POWER = 0.7;
+        return new ActionSequence(
+                new ParallelAction(claw.bendAction(120), claw.dropAction(), claw.rotateAction(90), new MaintainSubsystemAction(arm), new MaintainSubsystemAction(slides)),
+                new ParallelAction(slidesAction(0), new MaintainSubsystemAction(arm))
+        );
+    }
+
+
+
+    private double fudgeCount = 0;
     public Action armToGrabSpecAction() {
+        fudgeCount++;
         return new ParallelAction(
-                armAction(-6),
+                armAction((fudgeCount == 1) ? -6 : (fudgeCount == 2) ? -12 : -14),
                 new ActionSequence(
                         new WaitAction(500),
                         new ParallelAction(claw.rotateAction(90), claw.bendAction(240), claw.dropAction())
@@ -301,8 +402,9 @@ public class Robot implements Subsystem {
     }
 
     public Action prepareToHookAction() {
+        fudgeCount++;
         return new ParallelAction(
-                armAction(20),
+                armAction(((fudgeCount == 1) ? 23 : (fudgeCount == 2) ? 23 : 20)),
                 new ActionSequence(
                         new WaitAction(500),
                         new ParallelAction(claw.rotateAction(90), claw.bendAction(270))
@@ -314,24 +416,35 @@ public class Robot implements Subsystem {
         return arm.goToAction(Arm.Position.LOW_HOOK);
     }
 
-    public Action grabSampleAction() {
-        return claw.gripAction();
+    public Action armToGrabSampleAction() {
+        return new ParallelAction(
+                armAction(-32),
+                claw.rotateAction(90),
+                claw.bendAction(140),
+                claw.dropAction()
+        );
     }
 
     public Action highBasketAction() {
-        return new ParallelAction(
-                new ActionSequence(
-                        armAction(90),
-                        slidesAction(25)
-                ),
-                new ActionSequence(
+        //Arm.MAX_POWER = 1.0;
+        return new ActionSequence(
+                armAction(70),
+                new UntilAction(new WaitAction(500), new MaintainSubsystemAction(arm)),
+                new UntilAction(slidesAction(24), new MaintainSubsystemAction(arm)),
+                new UntilAction(new ActionSequence(
                         new WaitAction(500),
-                        new ParallelAction(claw.rotateAction(90), claw.bendAction(270))
-                )
+                        new ParallelAction(claw.rotateAction(90), claw.bendAction(200))
+                ), new ParallelAction(new MaintainSubsystemAction(arm), new MaintainSubsystemAction(slides)))
         );
     }
 
     public Action lowBasketAction() {
-        return arm.goToAction(Arm.Position.LOW_BASKET);
+        return new ActionSequence(
+                armAction(60),
+                new UntilAction(new ActionSequence(
+                        new WaitAction(500),
+                        new ParallelAction(claw.rotateAction(90), claw.bendAction(240))
+                ), new MaintainSubsystemAction(arm))
+        );
     }
 }

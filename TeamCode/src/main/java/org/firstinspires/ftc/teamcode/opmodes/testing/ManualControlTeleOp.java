@@ -5,9 +5,11 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.subsystems.Arm;
 import org.firstinspires.ftc.teamcode.subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.subsystems.Robot;
 import org.firstinspires.ftc.teamcode.util.PoseSingleton;
@@ -28,6 +30,9 @@ public class ManualControlTeleOp extends LinearOpMode {
 
         Robot robot = new Robot(hardwareMap, telemetry, PoseSingleton.getInstance().getPose());
         robot.slides.setTarget(0);
+
+        Arm.MAX_POWER = 1.0;
+        Arm.LIMIT_DOWN_POWER_ABOVE_45 = false;
 
         Gamepad prevGamepad1 = new Gamepad();
         Gamepad prevGamepad2 = new Gamepad();
@@ -58,6 +63,12 @@ public class ManualControlTeleOp extends LinearOpMode {
             robot.dt.setDrivePowers(x, y, turn);
             robot.update();
 
+            // HANG
+            /*if (gamepad1.dpad_up && gamepad1.y) {
+                hardwareMap.get(DcMotorEx.class, "hang1").setPower(0.5);
+                hardwareMap.get(DcMotorEx.class, "hang2").setPower(0.5);
+            }*/
+
             // ARM
             if (gamepad2.triangle || gamepad2.y) {
                 arm_target += 45 * dt;
@@ -68,12 +79,12 @@ public class ManualControlTeleOp extends LinearOpMode {
             }
 
             // SLIDES
-            if ((gamepad2.square && !prevGamepad2.square) || (gamepad2.x && !prevGamepad2.x)) {
-                slides_target = 25;
+            if ((gamepad2.square) || (gamepad2.x)) {
+                slides_target += 5 * dt;
             }
 
-            if ((gamepad2.circle && !prevGamepad2.circle) || (gamepad2.b && !prevGamepad2.b)) {
-                slides_target = 0;
+            if ((gamepad2.circle) || (gamepad2.b)) {
+                slides_target -= 5 * dt;
             }
 
             // CLAW
@@ -130,6 +141,14 @@ public class ManualControlTeleOp extends LinearOpMode {
             if (arm_target > -35) {
                 robot.claw.rotate(claw_rot);
                 robot.claw.bend(claw_bend);
+            }
+
+            if (arm_target > 85) {
+                arm_target = 85;
+            }
+
+            if (arm_target < -35) {
+                arm_target = -35;
             }
 
             telemetry.addData("arm target", arm_target);

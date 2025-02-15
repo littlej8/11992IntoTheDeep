@@ -4,7 +4,8 @@ import com.acmerobotics.roadrunner.Pose2d;
 
 public class PoseSingleton {
     private static final PoseSingleton instance = new PoseSingleton();
-    Pose2d pose = new Pose2d(0, 0, 0);
+    static Pose2d pose = new Pose2d(0, 0, 0);
+    static double armAngle = -40;
 
     private PoseSingleton() {}
 
@@ -15,8 +16,14 @@ public class PoseSingleton {
     public Pose2d getPose() {
         return pose;
     }
+    public double getArmAngle() {
+        return armAngle;
+    }
+    public void setArmAngle(double a) {
+        armAngle = a;
+    }
 
     public void setPose(Pose2d pose) {
-        this.pose = pose;
+        PoseSingleton.pose = pose;
     }
 }

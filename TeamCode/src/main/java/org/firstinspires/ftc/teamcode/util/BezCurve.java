@@ -31,6 +31,20 @@ public class BezCurve {
         this(new Vector2d[]{p0, p1, p2, p3}, maxVel, maxAccel);
     }
 
+    public BezCurve(Vector2d start, Vector2d end, double maxVel, double maxAccel) {
+        this(start, new Vector2d(end.x, start.y), new Vector2d(start.x, end.y), end, maxVel, maxAccel);
+    }
+
+    public void setYFirst() {
+        points[1] = new Vector2d(points[0].x, points[3].y);
+        points[2] = points[3];
+    }
+
+    public void setXFirst() {
+        points[1] = new Vector2d(points[3].x, points[0].y);
+        points[2] = points[3];
+    }
+
     public double getTotalTime() {
         return totalTime;
     }

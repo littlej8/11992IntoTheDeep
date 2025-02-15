@@ -14,10 +14,10 @@ import org.firstinspires.ftc.teamcode.util.PIDController;
 @Config
 public class Slides implements Subsystem {
     DcMotorEx slideMotor;
-    public static double Kp = 1.0;
+    public static double Kp = 0.5;
     public static double Ki = 0.0;
-    public static double Kd = 0.001;
-    public static double Kf = 0.1;
+    public static double Kd = 0;
+    public static double Kf = 0;
     public static PIDController slideController = new PIDController(0, 0, 0);
     double current = 0, target = 0;
     public static double FINISH_DIST = 1.0;
@@ -87,6 +87,10 @@ public class Slides implements Subsystem {
                 }
 
                 update(telemetry);
+
+                if (atPosition()) {
+                    slideMotor.setPower(0);
+                }
 
                 return !atPosition();
             }

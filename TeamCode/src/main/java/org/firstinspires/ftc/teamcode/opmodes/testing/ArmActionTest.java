@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.subsystems.Robot;
 import org.firstinspires.ftc.teamcode.subsystems.actions.MaintainSubsystemAction;
+import org.firstinspires.ftc.teamcode.subsystems.actions.ParallelAction;
 import org.firstinspires.ftc.teamcode.subsystems.actions.UntilAction;
 import org.firstinspires.ftc.teamcode.subsystems.actions.WaitAction;
 
@@ -17,18 +18,19 @@ import org.firstinspires.ftc.teamcode.subsystems.actions.WaitAction;
 @Autonomous(name = "Arm Action Test", preselectTeleOp = "MainTeleOp")
 public class ArmActionTest extends LinearOpMode {
     Robot robot;
+    public static double arm_testing_target = -40;
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        robot = new Robot(hardwareMap, telemetry, new Pose2d(-8, 64, Math.toRadians(180)), 69);
+        robot = new Robot(hardwareMap, telemetry, new Pose2d(-8, 64, Math.toRadians(180)));
 
         robot.schedule(
-                robot.prepareToHookAction(),
-                new UntilAction(new WaitAction(2000), new MaintainSubsystemAction(robot.arm)),
-                robot.claw.bendAction(210),
-                new UntilAction(new WaitAction(2000), new MaintainSubsystemAction(robot.arm)),
-                robot.lowerArmAction()
+                robot.highBasketAction(),
+                new UntilAction(new WaitAction(5000), new ParallelAction(
+                        new MaintainSubsystemAction(robot.arm),
+                        new MaintainSubsystemAction(robot.slides)
+                ))
         );
 
         waitForStart();
@@ -37,10 +39,8 @@ public class ArmActionTest extends LinearOpMode {
         double finishTime = 0.0;
 
         while (opModeIsActive()) {
+            //robot.arm.setTarget(arm_testing_target);
             robot.update(telemetry);
-            if (!robot.actionsDone())
-                finishTime = timer.seconds();
-            telemetry.addData("time", finishTime);
             telemetry.update();
         }
     }

@@ -6,28 +6,30 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystems.actions.Action;
 import org.firstinspires.ftc.teamcode.util.MotionProfile;
 import org.firstinspires.ftc.teamcode.util.PIDController;
+import org.firstinspires.ftc.teamcode.util.PoseSingleton;
 
 @Config
 public class Arm implements Subsystem {
     DcMotorEx motor;
     public static double Kp = 5.0;
-    public static double Ki = 0.003;
+    public static double Ki = 0;
     public static double Kd = 0.01;//0.4;
-    public static double Kf = 0.6;//0.35;
+    public static double Kf = 0.2;//0.35;
     PIDController controller = new PIDController(0, 0, 0);
-    double currentAngle = -40;
+    public static double currentAngle = -40;
     double degPerTick = 360.0 / (1497.325 * 2.5);
     public static double start_angle = -40;
     double target = -40;
     double profileTarget = -40, lastUpdate = System.currentTimeMillis();
     public static double DEG_PER_SEC = 180;
     public static double ANGLE_FINISH_DIST = 10;
-    public static double MAX_POWER = 1.0;
+    public static double MAX_POWER = 0.7;
 
     public static boolean USE_MOTION_PROFILE = false;
     boolean finishedMove = true;
@@ -43,6 +45,9 @@ public class Arm implements Subsystem {
         HIGH_BASKET
     }
     public static double RETRACTED_POS = -40, GRAB_POS = -5, LOW_HOOK_POS = 0, HIGH_HOOK_POS = 60, LOW_BASKET_POS = 60, HIGH_BASKET_POS = 80;
+    double maxVoltage;
+    public static boolean ADJUST_UP_5_IF_VOLTAGE_LOW = false;
+    public static boolean LIMIT_DOWN_POWER_ABOVE_45 = true;
 
     public Arm(HardwareMap hw) {
         for (LynxModule module :hw.getAll(LynxModule.class)) {
@@ -53,6 +58,18 @@ public class Arm implements Subsystem {
 
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        maxVoltage = hw.voltageSensor.iterator().next().getVoltage();
+
+        start_angle = PoseSingleton.getInstance().getArmAngle();
+    }
+
+    public void set_start_angle(double angle) {
+        start_angle = angle;
+    }
+
+    public void decreaseStartAngle(double amt) {
+        start_angle -= amt;
     }
 
     public Arm(HardwareMap hw, Telemetry tel) {
@@ -77,7 +94,13 @@ public class Arm implements Subsystem {
 
     public void setTarget(double deg) {
         finishedMove = false;
-        target = deg;
+        /*if (maxVoltage < 13.1 && ADJUST_UP_5_IF_VOLTAGE_LOW) {
+            target = deg + 6;
+        } else if (maxVoltage < 13.5 && ADJUST_UP_5_IF_VOLTAGE_LOW) {
+            target = deg + 5;
+        } else {*/
+            target = deg;
+        //}
     }
 
     public double getArmPosition() {
@@ -105,11 +128,7 @@ public class Arm implements Subsystem {
                 }
                 update(telemetry);
 
-                if (atPosition()) {
-                    motor.setPower(0);
-                    return false;
-                }
-                return true;
+                return !atPosition();
             }
         };
     }
@@ -171,6 +190,13 @@ public class Arm implements Subsystem {
 
         if (Math.abs(power) > MAX_POWER) {
             power = MAX_POWER * Math.signum(power);
+        }
+
+
+        if (power < 0.005 && getArmPosition() < Math.toRadians(45)) {
+            power = 0.005;
+        } else if (power < -0.2 && LIMIT_DOWN_POWER_ABOVE_45) {
+            power = -0.2;
         }
 
         motor.setPower(power);
