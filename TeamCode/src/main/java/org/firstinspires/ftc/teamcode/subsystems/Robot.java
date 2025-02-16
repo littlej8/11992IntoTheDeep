@@ -34,7 +34,7 @@ public class Robot implements Subsystem {
     public Arm arm;
     public Slides slides;
 
-    public static boolean USE_MOTION_PROFILE = true;
+    public static boolean USE_MOTION_PROFILE = false;
     public static double MAX_VEL = 48, MAX_ACCEL = 48;
 
     public Robot(HardwareMap hw, Telemetry telemetry, Pose2d startPose) {

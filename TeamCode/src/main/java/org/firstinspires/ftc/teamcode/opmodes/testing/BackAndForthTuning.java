@@ -19,22 +19,35 @@ public class BackAndForthTuning extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        Drivetrain dt = new Drivetrain(hardwareMap, telemetry, new Pose2d(0, 0, Math.toRadians(-90)));
-        boolean gone = false;
+        Robot robot = new Robot(hardwareMap, telemetry, new Pose2d(0, 0, Math.toRadians(0)), true);
+        robot.dt.setDriveRelativeToStart(false);
+        /*robot.schedule(
+                robot.moveAction(0, -48, 0),
+                robot.moveAction(0, 0, 0)
+        );*/
 
         waitForStart();
 
+        ElapsedTime timeToNext = new ElapsedTime();
+
+        boolean forward = true;
+
+        robot.dt.setTargetPose(new Pose2d(48, 0, 0));
+
         while (opModeIsActive()) {
-            if (dt.moveFinished() && !gone) {
-                sleep(500);
-                dt.setTargetPose(new Pose2d(72, 0, Math.toRadians(-90)));
-                gone = true;
-            } else if (dt.moveFinished()) {
-                sleep(500);
-                dt.setTargetPose(new Pose2d(0, 0, Math.toRadians(-90)));
-                gone = false;
+            robot.dt.updatePose(telemetry);
+            robot.dt.updateMovement(telemetry);
+
+            if (robot.dt.moveFinished() && timeToNext.seconds() > 2) {
+                forward = !forward;
+                timeToNext.reset();
             }
-            dt.update(telemetry);
+
+            if (timeToNext.seconds() > 1) {
+                robot.dt.setTargetPose(new Pose2d((forward ? 48 : 0), (forward ? 0 : 0), 0));
+            }
+
+            telemetry.update();
         }
     }
 }

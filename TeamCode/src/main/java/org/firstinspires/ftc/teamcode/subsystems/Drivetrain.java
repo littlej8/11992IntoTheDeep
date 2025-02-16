@@ -17,6 +17,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.util.GoBildaPinpointDriver;
 import org.firstinspires.ftc.teamcode.util.PIDController;
 import org.firstinspires.ftc.teamcode.util.PoseKalmanFilter;
 
@@ -24,6 +27,7 @@ import org.firstinspires.ftc.teamcode.util.PoseKalmanFilter;
 public class Drivetrain implements Subsystem {
     DcMotorEx fl, fr, bl, br;
     IMU imu;
+    GoBildaPinpointDriver odo;
     double headingOffset;
     Pose2d pose, targetPose, visionUpdate;
     double visionTimeStamp = System.currentTimeMillis();
@@ -38,7 +42,7 @@ public class Drivetrain implements Subsystem {
 
     public static double xP = 0.2, xI = 0.0, xD = 0;
     public static double yP = 0.2, yI = 0.0, yD = 0;
-    public static double hP = 1.0, hI = 0, hD = 0;
+    public static double hP = 6.0, hI = 0, hD = 0;
 
     public static double HEADING_POWER_MULT = 1.0;
     PIDController xPID = new PIDController(xP, xI, xD),
@@ -52,7 +56,7 @@ public class Drivetrain implements Subsystem {
 
     public static double FORWARD_GAIN = 1.063594;
     public static double STRAFE_GAIN = 1.268493;
-    public static double MAX_WHEEL_POWER = 1.0;
+    public static double MAX_WHEEL_POWER = 0.5;
     public static double MAX_ADJUSTMENT_POWER = 0.3;
 
     public static double LINEAR_FINISH_DIST = 1.0;
@@ -108,6 +112,13 @@ public class Drivetrain implements Subsystem {
         imu = hw.get(IMU.class, "imu");
         imu.initialize(new IMU.Parameters(orientationOnRobot));
         imu.resetYaw();
+
+        odo = hw.get(GoBildaPinpointDriver.class,"odo");
+        odo.setOffsets(30, -120);
+        odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        odo.resetPosAndIMU();
+        odo.setPosition(new Pose2D(DistanceUnit.INCH, startPose.position.y, startPose.position.x, AngleUnit.RADIANS, startPose.heading.toDouble()));
 
         timer = new ElapsedTime();
     }
@@ -196,7 +207,7 @@ public class Drivetrain implements Subsystem {
     }
 
     public void updatePose(Telemetry telemetry) {
-        double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) + headingOffset;
+        /*double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) + headingOffset;
         wheels[0] = fl.getCurrentPosition();
         wheels[1] = fr.getCurrentPosition();
         wheels[2] = bl.getCurrentPosition();
@@ -247,18 +258,18 @@ public class Drivetrain implements Subsystem {
         prevWheels[1] = wheels[1];
         prevWheels[2] = wheels[2];
         prevWheels[3] = wheels[3];
-        prevHeading = heading;
+        prevHeading = heading;*/
+
+        odo.update();
+        Pose2D odo_pose = odo.getPosition();
+        Pose2D vel = odo.getVelocity();
 
         if (telemetry != null) {
-            double timeDiff = (System.currentTimeMillis() - lastUpdate) / 1000;
-            double velX = twist.line.x / timeDiff; // in per sec
-            double velY = twist.line.y / timeDiff;
-            double velH = dtheta / timeDiff;
-
-            velocity = new Pose2d(velX, velY, velH);
+            pose = new Pose2d(odo_pose.getY(DistanceUnit.INCH), odo_pose.getX(DistanceUnit.INCH), odo_pose.getHeading(AngleUnit.RADIANS));
+            velocity = new Pose2d(vel.getY(DistanceUnit.INCH), vel.getX(DistanceUnit.INCH), vel.getHeading(AngleUnit.RADIANS));
 
             telemetry.addData("Current Pose", "(%.2f, %.2f, %.2f)", pose.position.x, pose.position.y, Math.toDegrees(pose.heading.toDouble()));
-            telemetry.addData("Velocity", "(%.2f, %.2f, %.2f)", velX, velY, velH);
+            telemetry.addData("Velocity", "(%.2f, %.2f, %.2f)", velocity.position.x, velocity.position.y, Math.toDegrees(velocity.heading.toDouble()));
         }
 
         lastUpdate = System.currentTimeMillis();
@@ -335,15 +346,26 @@ public class Drivetrain implements Subsystem {
         yPID.setPID(yP, yI, yD);
         hPID.setPID(hP, hI, hD);
 
-        double xPower = -xPID.update(pose.position.x, targetPose.position.x); //TODO: MAYBE MAKE NEGATIVE
-        double yPower = -yPID.update(pose.position.y, targetPose.position.y);
-        double hPower = hPID.update(pose.heading.toDouble(), targetPose.heading.toDouble());
+        double xErr = targetPose.position.x - pose.position.x;
+        double yErr = targetPose.position.y - pose.position.y;
+        double hErr = targetPose.heading.toDouble() - pose.heading.toDouble();
+
+        double xPower = xP * xErr;//xPID.update(pose.position.x, targetPose.position.x); //TODO: MAYBE MAKE NEGATIVE
+        double yPower = -yP * yErr;//-yPID.update(pose.position.y, targetPose.position.y);
+        double hPower = hP * hErr;//hPID.update(pose.heading.toDouble(), targetPose.heading.toDouble());
 
         if (Math.abs(xPower) < 0.03)
             xPower = 0;
         if (Math.abs(yPower) < 0.03)
             yPower = 0;
         if (Math.abs(hPower) < 0.03)
+            hPower = 0;
+
+        if (Double.isNaN(xPower))
+            xPower = 0;
+        if (Double.isNaN(yPower))
+            yPower = 0;
+        if (Double.isNaN(hPower))
             hPower = 0;
 
         Vector2d linearPowers = rotateVec(new Vector2d(xPower, yPower), -pose.heading.toDouble());

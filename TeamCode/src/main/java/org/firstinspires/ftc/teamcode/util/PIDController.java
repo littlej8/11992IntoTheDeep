@@ -56,7 +56,9 @@ public class PIDController {
         if (Math.abs(sumError) > 100) {
             sumError = 100 * Math.signum(sumError);
         }*/
-        double d = (error - prevError) / timePassed;
+        double d = 0;
+        if (timePassed > 0.001)
+            d = (error - prevError) / timePassed;
 
         return (error * Kp) + (sumError * Ki) + (d * Kd);
     }

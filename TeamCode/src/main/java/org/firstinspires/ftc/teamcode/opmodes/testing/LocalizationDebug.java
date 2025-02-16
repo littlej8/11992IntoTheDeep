@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Robot;
 public class LocalizationDebug extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        Robot robot = new Robot(hardwareMap, telemetry, new Pose2d(0, 0, 0), true);
+        Robot robot = new Robot(hardwareMap, telemetry, new Pose2d(0, 0, Math.toRadians(180)), true);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         waitForStart();
         while (opModeIsActive()) {
