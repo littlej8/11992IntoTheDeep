@@ -90,7 +90,7 @@ public class MainTeleOp extends LinearOpMode {
             if (gamepad1.right_trigger > 0.2) {
                 x -= gamepad1.right_trigger / 2;
             }
-            double y = gamepad1.left_stick_y * Math.abs(gamepad1.left_stick_y);
+            double y = gamepad1.left_stick_y;
             double turn = Math.pow(-gamepad1.right_stick_x, 3) * turnSpeed;
             robot.dt.setDrivePowers(x, y, turn);
             robot.updateWithVision(telemetry);

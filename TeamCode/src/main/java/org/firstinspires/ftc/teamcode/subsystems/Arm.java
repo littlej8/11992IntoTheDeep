@@ -23,7 +23,7 @@ public class Arm implements Subsystem {
     public static double Kf = 0.2;//0.35;
     PIDController controller = new PIDController(0, 0, 0);
     public static double currentAngle = -40;
-    double degPerTick = 360.0 / (1497.325 * 2.5);
+    double degPerTick = 360.0 / (145.1);
     public static double start_angle = -40;
     double target = -40;
     double profileTarget = -40, lastUpdate = System.currentTimeMillis();

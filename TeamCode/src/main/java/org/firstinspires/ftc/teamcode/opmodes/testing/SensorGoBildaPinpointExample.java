@@ -22,6 +22,8 @@
 
 package org.firstinspires.ftc.teamcode.opmodes.testing;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -70,6 +72,7 @@ public class SensorGoBildaPinpointExample extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         // Initialize the hardware variables. Note that the strings used here must correspond
         // to the names assigned during the robot configuration step on the DS or RC devices.
@@ -85,7 +88,9 @@ public class SensorGoBildaPinpointExample extends LinearOpMode {
         backwards is a negative number.
          */
         //odo.setOffsets(-25.4, (4.7 * 25.4)); //these are tuned for 3110-0002-0001 Product Insight #1
-        odo.setOffsets(30, -120);
+        odo.setOffsets(-30, 124);
+        //odo.setOffsets((-17.512 - 18.66)/2, (74.746 + 77.091)/2);
+        //odo.setOffsets(0, 0);
 
         /*
         Set the kind of pods used by your robot. If you're using goBILDA odometry pods, select either
@@ -102,7 +107,7 @@ public class SensorGoBildaPinpointExample extends LinearOpMode {
         increase when you move the robot forward. And the Y (strafe) pod should increase when
         you move the robot to the left.
          */
-        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.REVERSED);
+        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
 
         /*
@@ -163,6 +168,10 @@ public class SensorGoBildaPinpointExample extends LinearOpMode {
             double frequency = 1/loopTime;
             oldTime = newTime;
 
+            int xEnc = odo.getEncoderX();
+            int yEnc = odo.getEncoderY();
+            String encoders = String.format(Locale.US, "{X Encoder: %d, Y Encoder: %d", xEnc, yEnc);
+            telemetry.addData("Encoders: ", encoders);
 
             /*
             gets the current Position (x & y in mm, and heading in degrees) of the robot, and prints it.

@@ -498,7 +498,8 @@ public class GoBildaPinpointDriver extends I2cDeviceSynchDevice<I2cDeviceSynchSi
                 xPosition,
                 yPosition,
                 AngleUnit.RADIANS,
-                hOrientation);
+                ((hOrientation + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI);
+        // heading normalized to fix infinite issue from esd
     }
 
 

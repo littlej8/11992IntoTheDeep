@@ -35,6 +35,10 @@ public class Claw implements Subsystem {
         moveTimer.reset();
     }
 
+    public void rotateBy(double deg) {
+        rotate(wristRot.getPosition() + deg);
+    }
+
     public void bend(double deg) {
         wristBend.setPosition(deg * powerPerDegBend);
         moveTimer.reset();
@@ -45,7 +49,7 @@ public class Claw implements Subsystem {
     }
 
     public void grip() {
-        grip.setPosition(0.5);
+        grip.setPosition(0.515);
     }
 
     public Action rotateAction(double deg) {
