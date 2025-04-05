@@ -259,6 +259,13 @@ public class NewDrivetrain implements Subsystem {
         return linearDistance < linearFinishDist && angularDistance < headingFinishDist;
     }
 
+    public boolean moveFinishedAndStopped() {
+        double linearVel = Math.hypot(velocity.position.x, velocity.position.y);
+        double angularVel = Math.abs(velocity.heading.toDouble());
+
+        return moveFinished() && linearVel < 5.0 && angularVel < 0.5;
+    }
+
     public double getX() {
         return pose.position.x;
     }

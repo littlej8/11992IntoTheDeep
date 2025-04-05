@@ -5,6 +5,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -15,6 +16,7 @@ import org.firstinspires.ftc.teamcode.subsystems.actions.UntilAction;
 import org.firstinspires.ftc.teamcode.subsystems.actions.WaitAction;
 
 @Config
+@Disabled
 @Autonomous(name = "Arm Action Test", preselectTeleOp = "MainTeleOp")
 public class ArmActionTest extends LinearOpMode {
     Robot robot;

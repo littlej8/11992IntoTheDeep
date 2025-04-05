@@ -12,10 +12,10 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 public class NewSlides implements Subsystem {
     private Servo servo;
 
-    final double totalRotation = 1.57 * (1800.0 / 2.0); // deg per microsecond * total microseconds (half cus start at 0)
+    final double totalRotations = (1.57 * (1800.0 / 2.0)) / 360; // deg per microsecond * total microseconds (half cus start at 0)
     final double pulleyCircum = 1.456 * Math.PI; // gobilda pulley is 1.456 inches inner diameter
-    final double totalLinearTravel = pulleyCircum * totalRotation;
-    final double secPerInch = 1.68 / pulleyCircum; // 1.68 secs per rotation and circum is inches per rotation
+    final double totalLinearTravel = pulleyCircum * totalRotations;
+    final double inchPerSec = pulleyCircum / 1.68; // 1.68 secs per rotation and circum is inches per rotation
 
     private double positionEstimate = 0, target = 0;
     private ElapsedTime timer;
@@ -23,14 +23,19 @@ public class NewSlides implements Subsystem {
 
     public NewSlides(HardwareMap hw) {
         servo = hw.get(Servo.class, "slides");
+        timer = new ElapsedTime();
     }
 
     public void setTarget(double inches) {
         target = inches;
+        inches = Math.min(18, Math.max(0, inches));
+        inches -= 18;
+        inches *= 2;
 
         //double normalizedPosition = ((inches * 2) / totalLinearTravel) - 1; // inches to [-1, 1]
-        double normalizedPosition = inches / totalLinearTravel; // inches to [0, 1]
-        servo.setPosition(-normalizedPosition); // counterclockwise is better for some reason
+        double normalizedPosition = (inches / 18) + 0.5; // inches to [0.5, 1]
+        //normalizedPosition = Math.min(1.0, Math.max(0.5, normalizedPosition));
+        servo.setPosition(normalizedPosition);
     }
 
     public double getTarget() {
@@ -45,9 +50,12 @@ public class NewSlides implements Subsystem {
     @Override
     public void update(Telemetry telemetry) {
         double dt = timer.seconds() - lastUpdate;
+        if (dt > 0.1) {
+            dt = 0.1;
+        }
         lastUpdate = timer.seconds();
 
-        positionEstimate += (secPerInch * dt) * Math.signum(target - positionEstimate);
+        positionEstimate += (inchPerSec * dt) * Math.signum(target - positionEstimate);
         if (Math.abs(target - positionEstimate) < 0.5) {
             positionEstimate = target;
         }

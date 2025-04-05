@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.subsystems.NewRobot;
 
-@TeleOp
+@TeleOp(name="Drivetrain Testing", group="Dashboard Tests")
 public class NewDrivetrainTuning extends LinearOpMode {
     NewRobot robot;
 

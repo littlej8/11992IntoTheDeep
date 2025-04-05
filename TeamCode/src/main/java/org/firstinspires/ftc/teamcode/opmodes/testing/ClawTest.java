@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.subsystems.Claw;
 
 @Config
-@TeleOp
+@TeleOp(name="Claw Testing", group="Dashboard Tests")
 public class ClawTest extends LinearOpMode {
     public static double wrist = 0, bend = 0;
     public static boolean grip = true;

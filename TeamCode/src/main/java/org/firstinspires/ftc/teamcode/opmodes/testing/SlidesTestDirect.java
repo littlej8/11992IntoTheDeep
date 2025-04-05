@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes.testing;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -10,7 +11,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.subsystems.Slides;
 
 @TeleOp
-
+@Disabled
 @Config
 public class SlidesTestDirect extends LinearOpMode {
     public static double pos = 0;
@@ -28,7 +29,7 @@ public class SlidesTestDirect extends LinearOpMode {
         ElapsedTime timer = new ElapsedTime();
 
         while (opModeIsActive()) {
-            if (timer.seconds() > wait && pos == min) {
+            /*if (timer.seconds() > wait && pos == min) {
                 pos = max;
                 timer.reset();
             }
@@ -36,7 +37,7 @@ public class SlidesTestDirect extends LinearOpMode {
             if (timer.seconds() > wait && pos == max) {
                 pos = min;
                 timer.reset();
-            }
+            }*/
 
             slides.setTarget(pos);
             slides.update(telemetry);

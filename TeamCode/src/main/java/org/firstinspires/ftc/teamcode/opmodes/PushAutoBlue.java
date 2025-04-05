@@ -5,6 +5,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.google.ar.core.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -16,6 +17,7 @@ import org.firstinspires.ftc.teamcode.subsystems.actions.UntilAction;
 import org.firstinspires.ftc.teamcode.subsystems.actions.WaitAction;
 import org.firstinspires.ftc.teamcode.util.PoseSingleton;
 
+@Disabled
 @Autonomous(name = "Push Auto", preselectTeleOp = "MainTeleOp")
 public class PushAutoBlue extends LinearOpMode {
     Robot robot;

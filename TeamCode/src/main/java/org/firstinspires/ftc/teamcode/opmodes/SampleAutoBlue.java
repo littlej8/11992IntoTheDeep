@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -15,6 +16,7 @@ import org.firstinspires.ftc.teamcode.subsystems.actions.UntilAction;
 import org.firstinspires.ftc.teamcode.subsystems.actions.WaitAction;
 import org.firstinspires.ftc.teamcode.util.PoseSingleton;
 
+@Disabled
 @Autonomous(name = "Sample Auto", preselectTeleOp = "MainTeleOp")
 public class SampleAutoBlue extends LinearOpMode {
     Robot robot;

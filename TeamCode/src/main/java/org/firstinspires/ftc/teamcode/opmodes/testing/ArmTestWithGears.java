@@ -15,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.util.PIDController;
 
 @Config
-@TeleOp
+@TeleOp(name="Arm Testing", group="Dashboard Tests")
 public class ArmTestWithGears extends LinearOpMode {
     DcMotorEx motor;
     public static double Kp = 1.5;

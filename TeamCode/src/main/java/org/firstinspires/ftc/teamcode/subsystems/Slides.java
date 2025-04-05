@@ -46,6 +46,7 @@ public class Slides implements Subsystem {
 
         slideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         slideMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        slideMotor.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     public Slides(HardwareMap hw, Telemetry tel) {
@@ -69,7 +70,11 @@ public class Slides implements Subsystem {
     }
 
     public void setTarget(double pos) {
-        target = pos;
+        target = Math.max(0, Math.min(29, pos));
+    }
+
+    public double getTarget() {
+        return target;
     }
 
     public Action goToAction(Position pos) {
@@ -129,6 +134,11 @@ public class Slides implements Subsystem {
 
     public void hook() {
         goToPosition(target - 2);
+    }
+
+    public void resetPosition() {
+        slideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        slideMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     @Override

@@ -14,8 +14,8 @@ import org.firstinspires.ftc.teamcode.subsystems.NewRobot;
     yes
  */
 
-@TeleOp
 @Config
+@TeleOp(name="NewTeleOp", group="TeleOp")
 public class NewTeleOp extends LinearOpMode {
     public enum ArmState {
         ARM_RETRACTED,
@@ -23,7 +23,8 @@ public class NewTeleOp extends LinearOpMode {
         ARM_FLOOR_GRABBING,
         ARM_WALL_PICKUP,
         ARM_HOOK,
-        ARM_DROP
+        ARM_DROP,
+        ARM_DROP_LOW
     }
 
     NewRobot robot;
@@ -46,7 +47,8 @@ public class NewTeleOp extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        robot = new NewRobot(hardwareMap, 1.0, true);
+        robot = new NewRobot(hardwareMap, 1.0, false);
+        NewArm.max_speed = 90;
 
         boolean stayGripped = false;
 
@@ -65,7 +67,7 @@ public class NewTeleOp extends LinearOpMode {
                         robot.slides.setTarget(0);
                         robot.claw.grip();
                         robot.claw.bend(0);
-                        robot.claw.rotate(80);
+                        robot.claw.rotate(70);
                         switchingStates = false;
                     }
 
@@ -81,23 +83,31 @@ public class NewTeleOp extends LinearOpMode {
                         switchState(ArmState.ARM_DROP);
                     }
 
+                    if (gamepad2.left_trigger > 0.5) {
+                        robot.claw.drop();
+                    }
+
+                    if (gamepad2.right_trigger > 0.5) {
+                        robot.claw.grip();
+                    }
+
                     break;
                 }
 
                 case ARM_FLOOR_PICKUP: {
                     if (switchingStates) {
                         robot.claw.bend(135);
-                        robot.claw.rotate(80);
                         switchingStates = false;
 
                         if (!stayGripped) {
-                            robot.arm.setTarget(-40);
+                            robot.arm.setTarget(-35);
+                            robot.claw.rotate(70);
                             robot.claw.drop();
                             robot.slides.setTarget(0);
                         } else {
-                            robot.arm.setTarget(robot.arm.getTarget() + 15);
+                            robot.arm.setTarget(robot.arm.getTarget() + 10);
+                            robot.slides.setTarget(robot.slides.getTarget()-3);
                         }
-
 
                         stayGripped = false;
                     }
@@ -122,17 +132,25 @@ public class NewTeleOp extends LinearOpMode {
                         robot.claw.drop();
                     }
 
-                    if (gamepad2.right_bumper) {
+                    if (gamepad2.left_bumper) {
                         robot.claw.rotateBy(90 * dt);
                     }
 
-                    if (gamepad2.left_bumper) {
+                    if (gamepad2.right_bumper) {
                         robot.claw.rotateBy(-90 * dt);
                     }
 
                     if (Math.abs(gamepad2.left_stick_y) > 0.5) {
-                        robot.arm.setTarget(robot.arm.getTarget() + (-gamepad2.left_stick_y) * (7 * dt));
-                        robot.slides.setTarget(robot.slides.getTarget() + (-gamepad2.left_stick_y) * (8 * dt));
+                        double newSlides = robot.slides.getTarget() + (-gamepad2.left_stick_y * (10 * dt));
+                        if (newSlides <= 18 && newSlides > 0) {
+                            robot.arm.setTarget(robot.arm.getTarget() + (-gamepad2.left_stick_y) * (10 * dt));
+                            robot.slides.setTarget(newSlides);
+                        }
+                        if (newSlides > 12) {
+                            robot.claw.bend(145);
+                        } else {
+                            robot.claw.bend(135);
+                        }
                     }
 
                     break;
@@ -140,7 +158,8 @@ public class NewTeleOp extends LinearOpMode {
 
                 case ARM_FLOOR_GRABBING: {
                     if (switchingStates) {
-                        robot.arm.setTarget(robot.arm.getTarget()-15);
+                        robot.arm.setTarget(robot.arm.getTarget()-10);
+                        robot.slides.setTarget(robot.slides.getTarget()+3);
                         robot.claw.bend(140);
                         robot.claw.drop();
                         switchingStates = false;
@@ -163,7 +182,7 @@ public class NewTeleOp extends LinearOpMode {
                         robot.arm.setTarget(-25);
                         robot.slides.setTarget(0);
                         robot.claw.bend(60);
-                        robot.claw.rotate(80);
+                        robot.claw.rotate(70);
                         robot.claw.drop();
                         switchingStates = false;
                     }
@@ -193,15 +212,19 @@ public class NewTeleOp extends LinearOpMode {
 
                 case ARM_HOOK: {
                     if (switchingStates) {
-                        robot.arm.setTarget(5);
+                        robot.arm.setTarget(9);
                         robot.slides.setTarget(0);
                         robot.claw.bend(20);
-                        robot.claw.rotate(80);
+                        robot.claw.rotate(70);
                         switchingStates = false;
                     }
 
                     if (gamepad2.left_trigger > 0.5) {
                         robot.claw.drop();
+                    }
+
+                    if (gamepad2.right_trigger > 0.5) {
+                        robot.claw.grip();
                     }
 
                     if (gamepad2.circle && canSwitch()) {
@@ -221,15 +244,26 @@ public class NewTeleOp extends LinearOpMode {
 
                 case ARM_DROP: {
                     if (switchingStates) {
-                        robot.arm.setTarget(90);
-                        robot.slides.setTarget(20);
-                        robot.claw.bend(0);
+                        robot.slides.setTarget(0);
+                        robot.claw.bend(30);
                         robot.claw.rotate(80);
                         switchingStates = false;
                     }
 
+                    if (switchTimer.seconds() > 1) {
+                        robot.arm.setTarget(80);
+                    }
+
+                    if (switchTimer.seconds() > 2 && robot.arm.moveFinished()) {
+                        robot.slides.setTarget(29);
+                    }
+
                     if (gamepad2.left_trigger > 0.5) {
                         robot.claw.drop();
+                    }
+
+                    if (gamepad2.right_trigger > 0.5) {
+                        robot.claw.grip();
                     }
 
                     if (gamepad2.cross) {
@@ -238,6 +272,45 @@ public class NewTeleOp extends LinearOpMode {
 
                     if (gamepad2.circle) {
                         switchState(ArmState.ARM_HOOK);
+                    }
+
+                    if (gamepad2.right_bumper && switchTimer.seconds() > 0.5) {
+                        switchState(ArmState.ARM_DROP_LOW);
+                    }
+
+                    break;
+                }
+
+                case ARM_DROP_LOW: {
+                    if (switchingStates) {
+                        robot.slides.setTarget(0);
+                        robot.claw.bend(30);
+                        robot.claw.rotate(80);
+                        switchingStates = false;
+                    }
+
+                    if (switchTimer.seconds() > 1) {
+                        robot.arm.setTarget(80);
+                    }
+
+                    if (gamepad2.left_trigger > 0.5) {
+                        robot.claw.drop();
+                    }
+
+                    if (gamepad2.right_trigger > 0.5) {
+                        robot.claw.grip();
+                    }
+
+                    if (gamepad2.cross) {
+                        switchState(ArmState.ARM_FLOOR_PICKUP);
+                    }
+
+                    if (gamepad2.circle) {
+                        switchState(ArmState.ARM_HOOK);
+                    }
+
+                    if (gamepad2.right_bumper && switchTimer.seconds() > 0.5) {
+                        switchState(ArmState.ARM_DROP);
                     }
 
                     break;
@@ -254,17 +327,25 @@ public class NewTeleOp extends LinearOpMode {
             }
 
             if (gamepad2.dpad_up) {
-                NewArm.startAngle -= 10 * dt;
+                NewArm.startAngle -= 30 * dt;
             }
 
             if (gamepad2.dpad_down) {
-                NewArm.startAngle += 10 * dt;
+                NewArm.startAngle += 30 * dt;
             }
 
             robot.arm.update(telemetry);
             robot.slides.update(telemetry);
 
             robot.dt.driveTeleOp(gamepad1);
+
+            if (gamepad1.dpad_up) {
+                robot.lift.setPowers(1.0);
+            } else if (gamepad1.dpad_down) {
+                robot.lift.setPowers(-1.0);
+            } else {
+                robot.lift.setPowers(0.0);
+            }
 
             telemetry.update();
         }

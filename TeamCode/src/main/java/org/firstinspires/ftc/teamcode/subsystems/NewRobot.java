@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.google.gson.annotations.Until;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -24,13 +25,15 @@ public class NewRobot implements Subsystem {
     public NewDrivetrain dt;
     public Claw claw;
     public NewArm arm;
-    public NewSlides slides;
+    public Slides slides;
+    public Lift lift;
 
     public NewRobot(HardwareMap hw, Pose2d start, double speed, boolean teleop) {
         dt = new NewDrivetrain(hw, start, speed, teleop);
         claw = new Claw(hw); // servo so no reset
         arm = new NewArm(hw, teleop);
-        slides = new NewSlides(hw); // servo so no reset
+        slides = new Slides(hw); // servo so no reset
+        lift = new Lift(hw);
     }
 
     public NewRobot(HardwareMap hw, Pose2d start, double speed) {
@@ -129,26 +132,34 @@ public class NewRobot implements Subsystem {
     }
 
     public Action moveAndAction(double x, double y, double h, Action action) {
-        return new UntilAction(moveAction(x, y, h), action);
+        return new ParallelAction(moveAction(x, y, h), action);
     }
 
     public Action moveAndAction(double x, double y, double h, double speed, Action action) {
-        return new UntilAction(moveAction(x, y, h, speed), action);
+        return new ParallelAction(moveAction(x, y, h, speed), action);
     }
 
     public Action waitAction(double millis) {
         return new ActionSequence(
-            new UntilAction(new WaitAction(millis), new ParallelAction(
-                new MaintainSubsystemAction(dt),
-                new MaintainSubsystemAction(claw),
-                new MaintainSubsystemAction(arm),
-                new MaintainSubsystemAction(slides)
-            )),
+            new UntilAction(new WaitAction(millis), maintainAction()),
             telemetry -> {
                 dt.kill();
                 arm.kill();
                 return false;
             }
+        );
+    }
+
+    public Action maintainAndAction(Action a) {
+        return new UntilAction(a, maintainAction());
+    }
+
+    public Action maintainAction() {
+        return new ParallelAction(
+                new MaintainSubsystemAction(dt),
+                new MaintainSubsystemAction(claw),
+                new MaintainSubsystemAction(arm),
+                new MaintainSubsystemAction(slides)
         );
     }
 
@@ -160,14 +171,33 @@ public class NewRobot implements Subsystem {
         };
     }
 
-    public Action armAction(double deg) {
+    public Action armAction(double deg, double max_speed) {
+        double prev = NewArm.max_speed;
         return telemetry -> {
-            if (arm.getTarget() != deg)
-                arm.setTarget(deg);
+            NewArm.max_speed = max_speed;
+            arm.setTarget(deg);
             arm.update(telemetry);
 
             if (arm.moveFinished()) {
                 arm.motor.setPower(0);
+                NewArm.max_speed = prev;
+                return false;
+            }
+            return true;
+        };
+    }
+
+    public Action armAction(double deg) {
+        return armAction(deg, 135);
+    }
+
+    public Action slidesAction(double inches) {
+        return telemetry -> {
+            slides.setTarget(inches);
+            slides.update(telemetry);
+
+            if (slides.atPosition()) {
+                slides.slideMotor.setPower(0);
                 return false;
             }
             return true;

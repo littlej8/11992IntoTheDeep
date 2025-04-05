@@ -14,14 +14,14 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.util.PIDController;
 
 public class NewArm implements Subsystem {
-    DcMotorEx motor;
+    public DcMotorEx motor;
     public static double Kp = 1.5;
     public static double Ki = 0.0;
     public static double Kd = 0;
     public static double Kf = 0.15;
-    public static double Kl = 0.05;
-    public static PIDController controller = new PIDController(0, 0, 0);
-    public static double target = -54;
+    public static double Kl = 0.1;
+    public static PIDController controller = new PIDController(0, 0, 0, true);
+    double target = -54;
     public static double max_speed = 135;
     double setpoint = startAngle;
     public static double ticksToAngle = 5281.1 / 360.0;//(1497.325 * 1.75) / 360.0;
@@ -36,7 +36,12 @@ public class NewArm implements Subsystem {
         if (!teleop)
             motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        motor.setDirection(DcMotorSimple.Direction.REVERSE);
+        startAngle = -54;
+
+        if (hw.voltageSensor.iterator().next().getVoltage() < 13.5) {
+            //Kf = 0.2;
+        }
+        //motor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         timer = new ElapsedTime();
     }
@@ -63,7 +68,7 @@ public class NewArm implements Subsystem {
     // ram into robot for a second so backlash is always the same
     public void eliminateBacklash() {
         ElapsedTime timer = new ElapsedTime();
-        motor.setPower(-0.1);
+        motor.setPower(-0.15);
         while (timer.seconds() < 3 && Thread.currentThread().isAlive()) {
             // do nothing
         }
@@ -83,6 +88,7 @@ public class NewArm implements Subsystem {
         double max_adjust = max_speed * timer.seconds();
         double err = target - setpoint;
         setpoint += Math.min(Math.abs(err), max_adjust) * Math.signum(err);
+        err = target - setpoint;
         if (Math.abs(err) < 3) {
             setpoint = target;
         }
